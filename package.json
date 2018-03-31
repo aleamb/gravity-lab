@@ -1,0 +1,23 @@
+{
+  "name": "gravity-simulator",
+  "version": "1.0.0",
+  "description": "Gravity simulator",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aleamb/gravity-simulator.git"
+  },
+  "author": "Alejandro Ambroa",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aleamb/gravity-simulator/issues"
+  },
+  "homepage": "https://github.com/aleamb/gravity-simulator#readme",
+  "devDependencies": {
+    "browser-sync": "^2.23.6",
+    "gulp": "^3.9.1"
+  }
+}
