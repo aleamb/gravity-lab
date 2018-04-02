@@ -418,11 +418,12 @@ MODES = {
 
     derivativeOut.x = derivativeIn.x * delta + body.x;
     derivativeOut.y = derivativeIn.y * delta + body.y;
+
     derivativeOut.vx = derivativeIn.vx * delta + body.vx;
     derivativeOut.vy = derivativeIn.vy * delta + body.vy;
 
-    derivativeOut.fx = F.x ;
-    derivativeOut.fy = F.y;
+    derivativeOut.vx = F.x ;
+    derivativeOut.vy = F.y;
   }
 
 
