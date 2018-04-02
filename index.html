@@ -4,7 +4,7 @@
   <body>
 
     <div>
-
+      <button id="body-button" type="button" onclick="createStar()">Star</button>
       <button id="body-button" type="button" onclick="createBody()">Body</button>
       <button id="cancel-button" type="button">Cancel</button>
       <button id="erase-button" type="button" onclick="eraseAll()">Erase All</button>
@@ -14,8 +14,8 @@
       <label>Radius: <input id="field-radius" type="number" class="field"
           value="6371" step="500">Km</label>
       <label>Mass: <input id="field-mass" type="number" class="field" disabled>Kg.</label>
-      <label>Vx:<input id="field-vx" type="text" class="field" disabled>m/s</label>
-      <label>Vy:<input id="field-vy" type="text" class="field" disabled>m/s</label>
+      <label>Vx:<input id="field-vx" type="number" class="field" step="100">m/s</label>
+      <label>Vy:<input id="field-vy" type="number" class="field" step="100">m/s</label>
       <label>scale: 1px = <input id="field-scale" type="number" step="10000"
           oninput="doScale(this)"> Km</label>
 
@@ -25,12 +25,12 @@
       <label>Grid size: <input id="field-grid" type="number" step="5"
           oninput="doGrid(this)"> m/s</label>
 
-      <label>Gravity: <input id="field-proc" type="checkbox" checked> </label>
+      <label>Gravity: <input id="field-proc" type="checkbox"> </label>
     </div>
     <div>
       <span>Mouse pos:</span><span id="mx"></span>,<span id="my"></span>
     </div>
-    <canvas id="c" width="1900" height="500" style="border: 1px solid black"></canvas>
-    <script src="./app.js"></script>
+    <canvas id="c" width="1700" height="700" style="border: 1px solid black"></canvas>
+    <script src="index.js"></script>
   </body>
 </html>
