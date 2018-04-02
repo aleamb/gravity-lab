@@ -150,6 +150,7 @@ MODES = {
       case MODES.MOVE:
         DESP_X += (e.layerX - mx);
         DESP_Y += (e.layerY - my);
+        orbits_canvas.width |= 0;
         mx = e.layerX;
         my = e.layerY;
         break;
@@ -287,6 +288,7 @@ MODES = {
   }
   
   function scale(v) {
+    orbits_canvas.width |= 0;
     SCALE = 1 / (1000 * v);
   }
   
@@ -295,6 +297,7 @@ MODES = {
   }
   
   function center() {
+    orbits_canvas.width |= 0;
     DESP_X = WIDTH / 2;
     DESP_Y = HEIGHT / 2;
   }
@@ -354,31 +357,27 @@ MODES = {
   function renderOrbitOnPosition(body, pBodies, context) {
     var bx,by, nx, ny;
 
-    cBody.mass = Number(document.querySelector('#field-mass').value);
+    cBody.mass = body.mass;
     cBody.x = toUniverseCoordX(body);
     cBody.y = toUniverseCoordY(body);
-    
     cBody.vx = (body.tvx - body.tx) * V_SCALE;
     cBody.vy = (body.tvy - body.ty) * V_SCALE;
-
     cBody.radius = 1;
     cBody.color = 'red';
-
     cBody.tx = body.tx;
     cBody.ty = body.ty;
-
-
+    
     context.beginPath();
     context.moveTo(cBody.tx, cBody.ty);
 
-    var dt = 100;
+    var dt  = 0.5;
     var calculate = true;
     var iterations = 0;
 
     bx = cBody.tx;
     by = cBody.ty;
     var angle = 0;
-    // al menos 1000 iteracciones
+    // al menos 1000 iteraciones
     while (iterations < 10000 || (calculate && pBodies.length >= 1 && iterations < 10e5)) {
       
         var vx = 0;
@@ -411,65 +410,10 @@ MODES = {
   }
 
   function renderOrbit(body, pBodies, orbits_canvas, orbit_context, context) {
-    /*
-    var cBody= {};
-    var bx,by, nx, ny;
-
-    cBody.x = body.x;
-    cBody.y = body.y;
-
-    cBody.vx = body.vx;
-    cBody.vy = body.vy;
-    cBody.mass = body.mass;
-
-    bx = toCanvasCoordX(body);
-    by = toCanvasCoordY(body);
-    nx = ny = 0;
-
-    context.beginPath();
-    context.moveTo(bx, by);
-
-    var dt = 100;
-    var calculate = true;
-    var iterations = 0;
-
-    while (iterations < 10000 || (calculate && pBodies.length > 1)) {
-        var vx = 0;
-        var vy = 0;
-        for (var i = 0; i < pBodies.length; i++) {
-           if (pBodies[i] !== body) {
-            var g_force = calculateGForce(cBody, pBodies[i]);
-            vx -= g_force.x / cBody.mass * dt;
-            vy -= g_force.y / cBody.mass * dt;
-           }
-        }
-        cBody.vx += vx;
-        cBody.vy += vy;
-        cBody.x += cBody.vx * dt;
-        cBody.y += cBody.vy * dt;
-
-        nx = toCanvasCoordX(cBody);
-        ny = toCanvasCoordY(cBody);
-
-        context.lineTo(nx, ny);
-
-       iterations++;
-
-       if (iterations > 1000) {
-          calculate = !( (nx > (bx - 10)) 
-            && (nx < (bx + 10)) 
-            && (ny > (by - 10)) && (ny < (by + 10))
-          );
-        }
-
-    }
-    context.stroke();
-    */
    var nx = toCanvasCoordX(body);
    var ny = toCanvasCoordY(body);
-   orbit_context.fillRect(toCanvasCoordX(body), toCanvasCoordY(body), 2, 2);
+   orbit_context.fillRect(nx, ny, 2, 2);
    context.drawImage(orbits_canvas, 0, 0);
-
   }
 
   function toCanvasCoordX(body) {
