@@ -67,7 +67,6 @@ MODES = {
     var timestep = (delta * time_scale / 1000);
 
     var dt = 0.5;
-
     var limit = (timestep / dt) | 0;
     for (var l = 0; l < limit; l++) {
       var vx = 0;
