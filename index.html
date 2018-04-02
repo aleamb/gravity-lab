@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
-  <head></head>
+  <head>
+    <title>Playing with gravity.</title>
+  </head>
   <body>
-
     <div>
       <button id="body-button" type="button" onclick="createStar()">Star</button>
       <button id="body-button" type="button" onclick="createBody()">Body</button>
@@ -31,6 +32,7 @@
       <span>Mouse pos:</span><span id="mx"></span>,<span id="my"></span>
     </div>
     <canvas id="c" width="1700" height="700" style="border: 1px solid black"></canvas>
+    <canvas id="backcanvas" width="1700" height="700" style="display: none"></canvas>
     <script src="index.js"></script>
   </body>
 </html>

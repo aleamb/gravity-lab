@@ -20,9 +20,13 @@ MODES = {
   var dt = 3600; // integrate with intervales of seconds
   var GRID_SIZE = 100; // px
   var RADIUS_SCALE_THRESHOLD = 100000;  
+  var time_scale = 525600; // each second is X seconds
   var canvas = document.getElementById('c');
   var context = canvas.getContext('2d');
-  
+
+  var orbits_canvas = document.getElementById('backcanvas');
+  var orbits_context = orbits_canvas.getContext('2d');
+
   var WIDTH = canvas.width;
   var HEIGHT = canvas.height;
   
@@ -32,27 +36,13 @@ MODES = {
   var DESP_Y = HEIGHT / 2;
   var mx = 0;
   var my = 0;
+  var orbits_buffer;
   
-  var newbody = {
-    vx: 10,
-    vy: 10,
-    radius: 8,
-    x: 0,
-    y: 0,
-    mass: 5e24,
-    tx: 0,
-    ty: 0,
-    tvx: 0,
-    tvy: 0,
-    type: BODY_TYPES.PLANET,
-    proc: true,
-    ox: 0,
-    oy: 0,
-    t: 0
-
-  };
+  var newbody = null;
   var newstar = null;
   
+  var cBody= {};
+
   var bodies = [
   ];
   
@@ -72,40 +62,45 @@ MODES = {
     return F;
   }
   
-  function updatePos(pBodies, pBodyIndex, t) {
+  function updatePos(pBodies, pBodyIndex, delta) {
     var body = pBodies[pBodyIndex];
-    var vx = 0;
-    var vy = 0;
-    for (var i = 0; i < pBodies.length; i++) {
-      if (i !== pBodyIndex) {
-        var g_force = calculateGForce(body, pBodies[i]);
-        vx -= g_force.x / body.mass * t;
-        vy -= g_force.y / body.mass * t;
-      }
-    }
-    body.vx += vx;
-    body.vy += vy;
-    body.x += body.vx * t;
-    body.y += body.vy * t;
-    body.t += t;
-   // body.orbit.push(body.x);
-   // body.orbit.push(body.y);
+    var timestep = (delta * time_scale / 1000);
 
+    var dt = 0.5;
+
+    var limit = (timestep / dt) | 0;
+    for (var l = 0; l < limit; l++) {
+      var vx = 0;
+    var vy = 0;
+      for (var i = 0; i < pBodies.length; i++) {
+        if (i !== pBodyIndex) {
+            var g_force = calculateGForce(body, pBodies[i]);
+            vx -= g_force.x / body.mass * dt;
+            vy -= g_force.y / body.mass * dt;
+        }
+      }
+      body.vx += vx;
+      body.vy += vy;
+      body.x += body.vx * dt;
+      body.y += body.vy * dt;
+    }
+    body.t += timestep;
   }
   
-  function frame(t) {
-
-    canvas.width |= 0;
+  function frame(t) {    
+    var delta = t - t1;
+    canvas.width|=0;
 
     for (var b = 0; b < bodies.length; b++) {
        //for (var i = 0; i < timestep; i+=dt) {
       if (bodies[b].proc) {
-         updatePos(bodies, b, (t-t1)*3600)
+         updatePos(bodies, b, delta)
       }
        //} 
       renderBody(bodies[b], context);
+      renderInfo(bodies[b], context);
       if (bodies[b].proc) {
-        renderOrbit(bodies[b], bodies, context);
+        renderOrbit(bodies[b], bodies, orbits_canvas, orbits_context, context);
       }
      }
     
@@ -119,10 +114,12 @@ MODES = {
     } else if (mode === MODES.BODY_VELOCITY) {
         renderSelectBody(newbody, context);
         renderBodyVelocityVector(newbody, context);
-        renderOrbitOnPosition(newbody, bodies, context);
+        renderOrbitOnPosition(newbody, bodies,  context);
     }
     
     renderGrid(WIDTH, HEIGHT, GRID_SIZE, context);
+    
+    t1 = t;
 
     requestAnimationFrame(frame);
   }
@@ -252,7 +249,24 @@ MODES = {
   
   function createBody() {
      mode = MODES.BODY_POINTING;
-    newbody.x = newbody.y = 0;
+     newbody = 
+     { 
+        vx: 10,
+      vy: 10,
+      radius: 8,
+      x: 0,
+      y: 0,
+      mass: 5e24,
+      tx: 0,
+      ty: 0,
+      tvx: 0,
+      tvy: 0,
+      type: BODY_TYPES.PLANET,
+      proc: true,
+      ox: 0,
+      oy: 0,
+      t: 0
+   };
     
     var massInput = document.querySelector('#field-mass');
     var vxInput = document.querySelector('#field-vx');
@@ -315,6 +329,10 @@ MODES = {
     ctx.arc((body.x * SCALE) + DESP_X,  (body.y * SCALE) + DESP_Y, render_radius ? body.radius : (((1/SCALE >= RADIUS_SCALE_THRESHOLD)) ? 8 : (body.radius) * SCALE), 0, 2 * Math.PI);
     ctx.fill();
   }
+
+  function renderInfo(body, context) {
+    context.fillText((body.t / 86400).toFixed(2), toCanvasCoordX(body)- 15, toCanvasCoordY(body) - 15);
+  }
   
   
   function renderDistance(body, bodies, context) {
@@ -335,30 +353,31 @@ MODES = {
   }
 
   function renderOrbitOnPosition(body, pBodies, context) {
-
-    var cBody= {};
     var bx,by, nx, ny;
 
     cBody.mass = Number(document.querySelector('#field-mass').value);
     cBody.x = toUniverseCoordX(body);
     cBody.y = toUniverseCoordY(body);
     
-    cBody.vx = (newbody.tvx - newbody.tx) * V_SCALE;
-    cBody.vy = (newbody.tvy - newbody.ty) * V_SCALE;
+    cBody.vx = (body.tvx - body.tx) * V_SCALE;
+    cBody.vy = (body.tvy - body.ty) * V_SCALE;
 
     cBody.radius = 1;
     cBody.color = 'red';
 
+    cBody.tx = body.tx;
+    cBody.ty = body.ty;
+
 
     context.beginPath();
-    context.moveTo(body.tx, body.ty);
+    context.moveTo(cBody.tx, cBody.ty);
 
     var dt = 100;
     var calculate = true;
     var iterations = 0;
 
-    bx = body.tx;
-    by = body.ty;
+    bx = cBody.tx;
+    by = cBody.ty;
     var angle = 0;
     // al menos 1000 iteracciones
     while (iterations < 10000 || (calculate && pBodies.length >= 1 && iterations < 10e5)) {
@@ -392,8 +411,8 @@ MODES = {
     context.stroke();
   }
 
-  function renderOrbit(body, pBodies, context) {
-
+  function renderOrbit(body, pBodies, orbits_canvas, orbit_context, context) {
+    /*
     var cBody= {};
     var bx,by, nx, ny;
 
@@ -446,6 +465,12 @@ MODES = {
 
     }
     context.stroke();
+    */
+   var nx = toCanvasCoordX(body);
+   var ny = toCanvasCoordY(body);
+   orbit_context.fillRect(toCanvasCoordX(body), toCanvasCoordY(body), 2, 2);
+   context.drawImage(orbits_canvas, 0, 0);
+
   }
 
   function toCanvasCoordX(body) {
@@ -542,9 +567,8 @@ MODES = {
     document.querySelector('#my').innerHTML = y - DESP_Y;
     
   }
-  
-  t1 = 0;
+
   eraseAll();
-  
+  t1 = 0;
   requestAnimationFrame(frame);
   
