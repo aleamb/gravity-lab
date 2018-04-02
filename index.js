@@ -45,11 +45,14 @@ MODES = {
 
   var bodies = [
   ];
+
+  var d0 = d1 = d2 = d3 = d4 = {x:0, y: 0, vx: 0, vy: 0};
+
+  var F = {};
   
   function calculateGForce(body1, body2) {
     var dx = body2.x - body1.x;
     var dy = body2.y - body1.y;
-    var F = {};
     var d2 = dx * dx + dy * dy;
     var d = Math.sqrt(d2);
     
@@ -129,7 +132,7 @@ MODES = {
       proc: false,
       vx: 0,
       vy: 0,
-      radius: 15,
+      radius: 695700,
       x: 0,
       y: 0,
       mass: 1.98e30,
@@ -253,7 +256,7 @@ MODES = {
      { 
         vx: 10,
       vy: 10,
-      radius: 8,
+      radius: 6374,
       x: 0,
       y: 0,
       mass: 5e24,
@@ -355,59 +358,65 @@ MODES = {
   }
 
   function renderOrbitOnPosition(body, pBodies, context) {
-    var bx,by, nx, ny;
 
-    cBody.mass = body.mass;
-    cBody.x = toUniverseCoordX(body);
-    cBody.y = toUniverseCoordY(body);
-    cBody.vx = (body.tvx - body.tx) * V_SCALE;
-    cBody.vy = (body.tvy - body.ty) * V_SCALE;
-    cBody.radius = 1;
-    cBody.color = 'red';
-    cBody.tx = body.tx;
-    cBody.ty = body.ty;
-    
-    context.beginPath();
-    context.moveTo(cBody.tx, cBody.ty);
+    if (pBodies.length >= 1) {
+      var bx,by, nx, ny;
+      cBody.mass = body.mass;
+      cBody.x = toUniverseCoordX(body);
+      cBody.y = toUniverseCoordY(body);
+      cBody.vx = (body.tvx - body.tx) * V_SCALE;
+      cBody.vy = (body.tvy - body.ty) * V_SCALE;
+      cBody.radius = 1;
+      cBody.color = 'red';
+      cBody.tx = body.tx;
+      cBody.ty = body.ty;
 
-    var dt  = 0.5;
-    var calculate = true;
-    var iterations = 0;
+      context.beginPath();
+      context.moveTo(cBody.tx, cBody.ty);
 
-    bx = cBody.tx;
-    by = cBody.ty;
-    var angle = 0;
-    // al menos 1000 iteraciones
-    while (iterations < 10000 || (calculate && pBodies.length >= 1 && iterations < 10e5)) {
-      
-        var vx = 0;
-        var vy = 0;
-        for (var i = 0; i < pBodies.length; i++) {
-            var g_force = calculateGForce(cBody, pBodies[i]);
-            vx -= g_force.x / cBody.mass * dt;
-            vy -= g_force.y / cBody.mass * dt;
+      // Runge-Kutta
+
+      for (var s = 0; s < 100; s++) {
+        for (var b = 0; b < pBodies.length; b++) {
+          var steps = 4;
+          var delta = 1/steps;
+          for(var i = 0; i < steps; i++) {
+            compute(pBodies[b], cBody, delta * 0.0, d0, d1);
+            compute(pBodies[b], cBody, delta * 0.5, d1, d2);
+            compute(pBodies[b], cBody, delta * 0.5, d2, d3);
+            compute(pBodies[b], cBody, delta * 1.0, d3, d4);
+
+            d2.iadd(d3).imul(2);
+            d4.iadd(d1).iadd(d2).imul(1/6);
+          
+            //body.position.iadd(d4.position.mul(delta));
+
+            cBody.x += d4.x;
+            cBody.y += d4.y;
+
+            cBody.vx += d4.vx * delta;
+            cBody.vy += d4.vy * delta;
+          }
         }
-        cBody.vx += vx;
-        cBody.vy += vy;
-        cBody.x += cBody.vx * dt;
-        cBody.y += cBody.vy * dt;
- 
-        nx = toCanvasCoordX(cBody);
-        ny = toCanvasCoordY(cBody);
-
-        context.lineTo(nx, ny);
-
-        iterations++;
-
-        if (iterations > 1000) {
-          calculate = !( (nx > (bx - 10)) 
-            && (nx < (bx + 10)) 
-            && (ny > (by - 10)) && (ny < (by + 10))
-          );
-        }
+      }
+      context.lineTo(toCanvasCoordX(cBody), toCanvasCoordX(cBody));
+      context.stroke();
     }
-    context.stroke();
   }
+
+  function compute(center, body, delta, derivativeIn, derivativeOut) {
+
+    var state = derivative.mul(delta).add(initial);
+    calculateGForce()
+    derivativeOut.x = 
+    derivativeIn.x = 
+
+    return new Derivative(
+        state.velocity,
+        acceleration(center, state.position)
+    );
+
+
 
   function renderOrbit(body, pBodies, orbits_canvas, orbit_context, context) {
    var nx = toCanvasCoordX(body);
