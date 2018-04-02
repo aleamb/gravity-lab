@@ -4,35 +4,38 @@
     <title>Playing with gravity.</title>
   </head>
   <body>
-    <div>
-      <button id="body-button" type="button" onclick="createStar()">Star</button>
-      <button id="body-button" type="button" onclick="createBody()">Body</button>
-      <button id="cancel-button" type="button">Cancel</button>
-      <button id="erase-button" type="button" onclick="eraseAll()">Erase All</button>
-      <button id="erase-button" type="button" onclick="center()">Center</button>
+    <div class="main-actions">
+      <button class="body-button" type="button" onclick="createStar()">Star</button>
+      <button class="body-button" type="button" onclick="createBody()">Body</button>
+      <button class="cancel-button" type="button">Cancel</button>
+      <button class="erase-button" type="button" onclick="eraseAll()">Erase All</button>
+      <button class="center-button" type="button" onclick="center()">Center</button>
     </div>
+    <div class="body-parameters">
+      <label>Pos x: <input id="field-posx" type="number" class="field" step="1">UA</label>
+      <label>Pos y: <input id="field-posy" type="number" class="field" step="1">UA</label>
+      <label>Radius: <input id="field-radius" type="number" class="field" value="6371" step="500">Km.</label>
+      <label>Mass: <input id="field-mass" type="number" class="field">Kg.</label>
+      <label>Vx:<input id="field-vx" type="number" class="field" step="0.5">Km/s</label>
+      <label>Vy:<input id="field-vy" type="number" class="field" step="0.5">Km/s</label>
+      <div class="paraemters-actions">
+          <button class="center-button" type="button" onclick="center()">Set</button>
+      </div>
     <div>
-      <label>Radius: <input id="field-radius" type="number" class="field"
-          value="6371" step="500">Km</label>
-      <label>Mass: <input id="field-mass" type="number" class="field" disabled>Kg.</label>
-      <label>Vx:<input id="field-vx" type="number" class="field" step="100">m/s</label>
-      <label>Vy:<input id="field-vy" type="number" class="field" step="100">m/s</label>
-      <label>scale: 1px = <input id="field-scale" type="number" step="10000"
-          oninput="doScale(this)"> Km</label>
-
-      <label>vscale: 1px = <input id="field-vscale" type="number" step="5"
-          oninput="doVScale(this)"> m/s</label>
-
-      <label>Grid size: <input id="field-grid" type="number" step="5"
-          oninput="doGrid(this)"> m/s</label>
-
-      <label>Gravity: <input id="field-proc" type="checkbox"> </label>
+    <div class="general-parameters">
+      <label>G<input id="field-g" type="number" oninput="doGChange(this)"></label>
+      <label>Scale: 1px = <input id="field-scale" type="number" step="10000" oninput="doScale(this)"> Km</label>
+      <label>Velocity Scale: 1px = <input id="field-vscale" type="number" step="5" oninput="doVScale(this)"> m/s</label>
+      <label>Grid size: <input id="field-grid" type="number" step="5"  oninput="doGrid(this)"> m/s</label>
+      <label>Enable Gravity for this object: <input id="field-proc" type="checkbox"> </label>
     </div>
-    <div>
-      <span>Mouse pos:</span><span id="mx"></span>,<span id="my"></span>
+    <div class="data-info">
+      <span>Mouse pos: </span><span id="mx"></span>,<span id="my"></span>
     </div>
-    <canvas id="c" width="1700" height="700" style="border: 1px solid black"></canvas>
-    <canvas id="backcanvas" width="1700" height="700" style="display: none"></canvas>
+    <div class="universe">
+      <canvas id="c"></canvas>
+      <canvas id="backcanvas"></canvas>
+    </div>
     <script src="index.js"></script>
   </body>
 </html>
