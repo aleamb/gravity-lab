@@ -375,36 +375,51 @@ MODES = {
       context.moveTo(cBody.tx, cBody.ty);
 
       // Runge-Kutta
+
       for (var b = 0; b < pBodies.length; b++) {
-          d0.x = cBody.x;
-          d0.y = cBody.y;
-          d0.vx = cBody.vx;
-          d0.vy = cBody.vy;
-          var steps = 4;
-          var delta = 1/steps;
+          var vx = 0;
+          var vy = 0;
 
-          for(var i = 0; i < steps; i++) {
-            compute(pBodies[b], cBody, delta * 0.0, d0, d1);
-            compute(pBodies[b], cBody, delta * 0.5, d1, d2);
-            compute(pBodies[b], cBody, delta * 0.5, d2, d3);
-            compute(pBodies[b], cBody, delta * 1.0, d3, d4);
+          var ivx = cBody.vx;
+          var ivy = cBody.vy;
 
-            d2.x = (d2.x + d3.x) * 2;
-            d2.y = (d2.y + d3.y) * 2;
-            d2.vx = (d2.vx + d3.vx) * 2;
-            d2.vy = (d2.vy + d3.vy) * 2;
+          var ix = cBody.x;
+          var iy = cBody.y;
 
-            d4.x = (d4.x + d1.x + d2.x) / 6;
-            d4.y = (d4.y + d1.y + d2.y) / 6;
-            d4.vx = (d4.vx + d1.vx + d2.vx) / 6;
-            d4.vy = (d4.vy + d1.vy  + d2.vy) / 6;
+          d1.x = ix;
+          d1.y = iy;
+          d1.vx = ivx;
+          d1.vy = ivy;
+          d1.mass = cBody.mass;
+          calculateGForce(pBodies[i], d1, F);
+          d1.ax = F.x / cBody.mass * dt; // 0
+          d1.ay = F.y / cBody.mass * dt;
 
-            cBody.x += d4.x * delta;
-            cBody.y += d4.y * delta;
+          d2.x = ix + 0.5 * d1.vx * dt;
+          d2.y = iy + 0.5 * d1.vy * dt;
+          d2.vx = ivx + 0.5 * d1.ax * dt;
+          d2.vy = ivy + 0.5 * d1.ay * dt;
+          calculateGForce(pBodies[i], d2 , F);
+          d2.ax = F.x / cBody.mass * (dt / 2); // 0
+          d2.ay = F.y / cBody.mass * (dt / 2);
 
-            cBody.vx += d4.vx * delta;
-            cBody.vy += d4.vy * delta;
-          }
+          d3.x = ix + 0.5 * d2.vx * dt;
+          d3.y = iy + 0.5 * d2.vy * dt;
+          d3.vx = ivx + 0.5 * d2.ax * (dt/2);
+          d3.vy = ivy + 0.5 * d2.ay * (dt/2);
+          calculateGForce(pBodies[i], d2 , F);
+          d2.fx = F.x;
+          d2.fy = F.y;
+
+          d3.x = ix + 0.5 * d0.vx * dt;
+          d3.y = ix + 0.5 * d0.vy * dt;
+          d3.vx = ivx + 0.5 * d0.fx * dt;
+          d3.vy = ivx + 0.5 * d0.fy * dt;
+          calculateGForce(pBodies[i], d3 , F);
+          d3.fx = F.x;
+          d3.fy = F.y;
+
+
       }
       
       context.lineTo(toCanvasCoordX(cBody), toCanvasCoordX(cBody));
@@ -414,16 +429,17 @@ MODES = {
 
   function compute(center, body, delta, derivativeIn, derivativeOut) {
 
-    calculateGForce(center, body, F);
-
     derivativeOut.x = derivativeIn.x * delta + body.x;
     derivativeOut.y = derivativeIn.y * delta + body.y;
 
     derivativeOut.vx = derivativeIn.vx * delta + body.vx;
     derivativeOut.vy = derivativeIn.vy * delta + body.vy;
 
+    calculateGForce(center, { x:derivativeOut.x , y: derivativeIn.y, mass: cBody.mass  } , F);
+
+
     derivativeOut.vx = F.x ;
-    derivativeOut.vy = F.y;
+    derivativeOut.y = F.y;
   }
 
 
