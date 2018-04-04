@@ -13,7 +13,7 @@ MODES = {
   }
   var UA = 149597870700; // meters
   var G = 6.67428e-11
-  var SCALE = 1 / (1e9); // 1px = SCALE meters
+  var SCALE = 1 / (1e6); // 1px = SCALE meters
   var V_SCALE = 1000; // 1px = 1000 m/S
   var update_time = 50 // each second
   var timestep =  1* 24 * 3600; // advance one day
@@ -21,14 +21,13 @@ MODES = {
   var GRID_SIZE = 100; // px
   var RADIUS_SCALE_THRESHOLD = 100000;  
   var time_scale = 525600; // each second is X seconds
-  var canvas = document.getElementById('c');
-  var context = canvas.getContext('2d');
+  var orbits_canvas;
+  var orbits_context;
+  var canvas = null;
+  var context = null;
 
-  var orbits_canvas = document.getElementById('backcanvas');
-  var orbits_context = orbits_canvas.getContext('2d');
-
-  var WIDTH = canvas.width;
-  var HEIGHT = canvas.height;
+  var WIDTH = 1700;
+  var HEIGHT = 700;
   
   var t1 = 0;
   var mode = MODES.pointer;
@@ -42,6 +41,8 @@ MODES = {
   var newstar = null;
   
   var cBody= {};
+  var cBody2= {};
+  var cBody3= {};
 
   var bodies = [
   ];
@@ -65,11 +66,26 @@ MODES = {
     return force;
   }
   
+  function calculateGForce2(body1, body2, force, g) {
+    var dx = body2.x - body1.x;
+    var dy = body2.y - body1.y;
+    var d2 = dx * dx + dy * dy;
+    var d = Math.sqrt(d2);
+    
+    force.mod = -g * (body1.mass * body2.mass / d2);
+  
+    // calcular componentes x, y de la fuerza
+    force.x = force.mod * (dx / d);
+    force.y = force.mod * (dy / d);
+  
+    return force;
+  }
+
   function updatePos(pBodies, pBodyIndex, delta) {
     var body = pBodies[pBodyIndex];
     var timestep = (delta * time_scale / 1000);
 
-    var dt = 0.5;
+    var dt = 0.2;
     var limit = (timestep / dt) | 0;
     for (var l = 0; l < limit; l++) {
       var vx = 0;
@@ -126,7 +142,7 @@ MODES = {
     requestAnimationFrame(frame);
   }
   
-  window.createStar = function() {
+  function createStar() {
     mode = MODES.STAR;
     newstar = {
       proc: false,
@@ -147,97 +163,7 @@ MODES = {
     massInput.value = newstar.mass;
     massInput.focus();
   }
-  canvas.onmousemove=(e)=>{
-    renderMousePos(e.layerX, e.layerY);
-    switch (mode) {
-      case MODES.MOVE:
-        DESP_X += (e.layerX - mx);
-        DESP_Y += (e.layerY - my);
-        orbits_canvas.width |= 0;
-        mx = e.layerX;
-        my = e.layerY;
-        break;
-      case MODES.STAR:
-        newstar.tx = e.layerX;
-        newstar.ty = e.layerY;
-        break;
-      case MODES.BODY_POINTING:
-        newbody.tx = e.layerX;
-        newbody.ty = e.layerY;
-        break;
-      case MODES.BODY_VELOCITY:
-        newbody.tvx = e.layerX;
-        newbody.tvy = e.layerY;
-        
-        var vxInput = document.querySelector('#field-vx');
-        var vyInput = document.querySelector('#field-vy');
-        
-        vxInput.value = (newbody.tvx - newbody.tx) * V_SCALE;
-        vyInput.value = (newbody.tvy - newbody.ty) * V_SCALE;
-        
-        break;
-    }
-  }
   
-  canvas.onmouseup=(e)=>{
-    switch (mode) {
-      case MODES.MOVE:
-        mode = MODES.POINTER;
-        break;
-      case MODES.STAR:
-        bodies.push(
-          {
-             type : BODY_TYPES.STAR,
-            vx: 0,
-            vy: 0,
-            proc: document.querySelector('#field-proc').checked,
-            radius: Number(document.querySelector('#field-radius').value) * 1000,
-            x: (e.layerX - DESP_X) / SCALE,
-            y: (e.layerY - DESP_Y) / SCALE,
-            mass: Number(document.querySelector('#field-mass').value)
-          }
-        );
-        mode = MODES.POINTER;
-        break;
-      case MODES.BODY_VELOCITY:
-        bodies.push(
-          {
-            type : BODY_TYPES.PLANET,
-            vx: (newbody.tvx - newbody.tx) * V_SCALE,
-            vy: (newbody.tvy - newbody.ty) * V_SCALE,
-            ox: (newbody.tvx - newbody.tx) * V_SCALE,
-            oy: (newbody.tvy - newbody.ty) * V_SCALE,
-            radius: Number(document.querySelector('#field-radius').value) * 1000,
-            proc: document.querySelector('#field-proc').checked,
-            x: (newbody.tx - DESP_X) / SCALE,
-            y: (newbody.ty - DESP_Y) / SCALE,
-            t: 0,
-            orbit: [],
-
-            mass: Number(document.querySelector('#field-mass').value)
-          }
-        );
-        mode = MODES.POINTER;
-        break;
-      case MODES.BODY_POINTING:
-        newbody.tx = e.layerX;
-        newbody.ty = e.layerY;
-        newbody.tvx = newbody.tx;
-        newbody.tvy = newbody.ty;
-        mode = MODES.BODY_VELOCITY;
-    }
-  }
-  
-  canvas.onmousedown=(e)=>{
-    
-    switch (mode) {
-      case MODES.POINTER:
-        mx = e.layerX;
-        my = e.layerY;
-        mode = MODES.MOVE;
-        break;
-    }
-  }
   
   function eraseAll() {
     bodies = [];
@@ -248,8 +174,7 @@ MODES = {
     V_SCALE = 500;
     SCALE = 1 / (10e8);
   }
-  
-  
+
   function createBody() {
      mode = MODES.BODY_POINTING;
      newbody = 
@@ -325,6 +250,8 @@ MODES = {
    context.moveTo(body.tx , body.ty );
    context.lineTo(body.tvx, body.tvy);
     context.stroke();
+
+
   }
   
   function renderBody(body, ctx, render_radius) {
@@ -355,11 +282,13 @@ MODES = {
     }
   }
 
+
   function renderOrbitOnPosition(body, pBodies, context) {
 
     if (pBodies.length >= 1) {
       var bx,by, nx, ny;
-      var dt = 10;
+      var dt = 667;
+      var g = G / 1000;
       
       cBody.mass = body.mass;
       cBody.x = toUniverseCoordX(body);
@@ -374,15 +303,19 @@ MODES = {
       var fx = 0;
       var fy = 0;
 
+      // verlet velocity integration method
+
       context.beginPath();
       context.moveTo(cBody.tx, cBody.ty);
 
-      for (var i = 0; i < 100000; i++) {
+      for (var i = 0; i < 20000; i++) {
 
         for (var b = 0; b < pBodies.length; b++) {
-          calculateGForce(cBody, pBodies[b], F);
-          fx -= F.x;
-          fy -= F.y;
+          if (body !== pBodies[b]) {
+            calculateGForce2(cBody, pBodies[b], F, g);
+            fx -= F.x;
+            fy -= F.y;
+          }
         }
       
         var ax = fx / cBody.mass * dt;
@@ -396,9 +329,11 @@ MODES = {
         fx = fy = 0;
 
         for (var b = 0; b < pBodies.length; b++) {
-          calculateGForce(cBody, pBodies[b], F);
-          fx -= F.x;
-          fy -= F.y;
+          if (body !== pBodies[b]) {
+            calculateGForce2(cBody, pBodies[b], F, g);
+            fx -= F.x;
+            fy -= F.y;
+          }
         }
         ax = fx / cBody.mass * dt;
         ay = fy / cBody.mass * dt;
@@ -417,6 +352,35 @@ MODES = {
    var ny = toCanvasCoordY(body);
    orbit_context.fillRect(nx, ny, 2, 2);  
    context.drawImage(orbits_canvas, 0, 0);
+
+   /*
+   var da = 0.01;
+   var ang = da;
+   var steps = Math.PI * 2 / da;
+
+   context.beginPath();
+
+   var r = body.sm * (1 - body.e*body.e) / (1 + (body.e));
+   cBody.x = body.sm;
+   cBody.y=0;
+
+   context.moveTo(toCanvasCoordX(cBody), toCanvasCoordY(cBody));
+
+   for (var i = 0; i < steps; i++, ang+=da) {
+
+    r = (body.sm * (1 - body.e*body.e)) / (1 + (body.e * Math.cos(ang)));
+    
+    cBody.x = r * Math.cos(ang)
+    cBody.y= r * Math.sin(ang);
+
+    /ontext.lineTo(toCanvasCoordX(cBody), toCanvasCoordY(cBody));
+
+   }
+   context.stroke();
+   context.strokeStyle = 'red';
+   renderOrbitOnPosition(body, pBodies, context);
+   context.strokeStyle = 'black';
+   */
   }
 
   function toCanvasCoordX(body) {
@@ -514,7 +478,154 @@ MODES = {
     
   }
 
+  canvas = document.getElementById('c');
+  orbits_canvas = document.getElementById('backcanvas');
+
+  canvas.width = WIDTH;
+  canvas.height = HEIGHT;
+  orbits_canvas.width = WIDTH;
+  orbits_canvas.height = HEIGHT;
+
+  context = canvas.getContext('2d');
+
+  orbits_context = orbits_canvas.getContext('2d');
+
+  canvas.onmousemove=(e)=>{
+    renderMousePos(e.layerX, e.layerY);
+    switch (mode) {
+      case MODES.MOVE:
+        DESP_X += (e.layerX - mx);
+        DESP_Y += (e.layerY - my);
+        orbits_canvas.width |= 0;
+        mx = e.layerX;
+        my = e.layerY;
+        break;
+      case MODES.STAR:
+        newstar.tx = e.layerX;
+        newstar.ty = e.layerY;
+        break;
+      case MODES.BODY_POINTING:
+        newbody.tx = e.layerX;
+        newbody.ty = e.layerY;
+        break;
+      case MODES.BODY_VELOCITY:
+        newbody.tvx = e.layerX;
+        newbody.tvy = e.layerY;
+        
+        var vxInput = document.querySelector('#field-vx');
+        var vyInput = document.querySelector('#field-vy');
+        
+        vxInput.value = (newbody.tvx - newbody.tx) * V_SCALE;
+        vyInput.value = (newbody.tvy - newbody.ty) * V_SCALE;
+        
+        break;
+    }
+  }
+  
+  canvas.onmouseup=(e)=>{
+    switch (mode) {
+      case MODES.MOVE:
+        mode = MODES.POINTER;
+        break;
+      case MODES.STAR:
+        bodies.push(
+          {
+             type : BODY_TYPES.STAR,
+            vx: 0,
+            vy: 0,
+            proc: document.querySelector('#field-proc').checked,
+            radius: Number(document.querySelector('#field-radius').value) * 1000,
+            x: (e.layerX - DESP_X) / SCALE,
+            y: (e.layerY - DESP_Y) / SCALE,
+            mass: Number(document.querySelector('#field-mass').value)
+          }
+        );
+        mode = MODES.POINTER;
+        break;
+      case MODES.BODY_VELOCITY:
+        bodies.push(
+          {
+            type : BODY_TYPES.PLANET,
+            vx: (newbody.tvx - newbody.tx) * V_SCALE,
+            vy: (newbody.tvy - newbody.ty) * V_SCALE,
+            ox: (newbody.tvx - newbody.tx) * V_SCALE,
+            oy: (newbody.tvy - newbody.ty) * V_SCALE,
+            radius: Number(document.querySelector('#field-radius').value) * 1000,
+            proc: document.querySelector('#field-proc').checked,
+            x: (newbody.tx - DESP_X) / SCALE,
+            y: (newbody.ty - DESP_Y) / SCALE,
+            t: 0,
+            orbit: [],
+
+            mass: Number(document.querySelector('#field-mass').value)
+          }
+        );
+        mode = MODES.POINTER;
+        break;
+      case MODES.BODY_POINTING:
+        newbody.tx = e.layerX;
+        newbody.ty = e.layerY;
+        newbody.tvx = newbody.tx;
+        newbody.tvy = newbody.ty;
+        mode = MODES.BODY_VELOCITY;
+    }
+  }
+  
+  canvas.onmousedown=(e)=>{
+    
+    switch (mode) {
+      case MODES.POINTER:
+        mx = e.layerX;
+        my = e.layerY;
+        mode = MODES.MOVE;
+        break;
+    }
+  }
+
+
+
   eraseAll();
   t1 = 0;
+
+/*
+  bodies.push(
+    {
+      type : BODY_TYPES.STAR,
+      vx: 0,
+      vy: 0,
+      ox: 0,
+      oy: 0,
+      ovx: 0,
+      ovy: 0,
+      radius: 100,
+      proc: false,
+      x: 0,
+      y: 0,
+      t: 0,
+      mass: 1.98e30
+    }
+  );
+
+  bodies.push(
+    {
+      type : BODY_TYPES.PLANET,
+      vx: 0,
+      vy: 26.50 * 1000,
+      ovx: 0,
+      ovy: 26.50 * 1000,
+      ox: 206.62e6 * 1000,
+      oy: 0,
+      radius: 10,
+      proc: true,
+      x: 	206.62e6 * 1000,
+      y: 0,
+      t: 0,
+      mass: 0.64171e24,
+      e: 0.093315,
+      sm: 227.92e6 * 1000
+    });
+  
+*/
+
   requestAnimationFrame(frame);
   
