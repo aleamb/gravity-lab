@@ -1,2 +1,2 @@
-# gravity-simulator
-Gravity simulator
+# gravity-lab
+Gravity laboratory
