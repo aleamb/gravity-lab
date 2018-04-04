@@ -359,13 +359,14 @@ MODES = {
 
     if (pBodies.length >= 1) {
       var bx,by, nx, ny;
-      var dt = 0.03;
+      var dt = 10;
+      
       cBody.mass = body.mass;
       cBody.x = toUniverseCoordX(body);
       cBody.y = toUniverseCoordY(body);
       cBody.vx = (body.tvx - body.tx) * V_SCALE;
-      cBody.vy = (body.tvy - body.ty) * V_SCALE;
-      cBody.radius = 1;
+      cBody.vy = (body.tvy - body.ty) * V_SCALE;  
+      cBody.radius = 1; 
       cBody.color = 'red';
       cBody.tx = body.tx;
       cBody.ty = body.ty;
@@ -376,23 +377,37 @@ MODES = {
       context.beginPath();
       context.moveTo(cBody.tx, cBody.ty);
 
-      for (var b = 0; b < pBodies.length; b++) {
-        calculateGForce(cBody, pBodies[b], F);
-        fx += F.x;
-        fy += F.y;
-      }
+      for (var i = 0; i < 100000; i++) {
 
-      var ax = fx / cBody.mass * dt;
-      var ay = fy / cBody.mass * dt;
-      var prev
+        for (var b = 0; b < pBodies.length; b++) {
+          calculateGForce(cBody, pBodies[b], F);
+          fx -= F.x;
+          fy -= F.y;
+        }
+      
+        var ax = fx / cBody.mass * dt;
+        var ay = fy / cBody.mass * dt;
+        
+        cBody.x = cBody.x + cBody.vx * dt + ax*dt/2;
+        cBody.y = cBody.y + cBody.vy * dt + ay*dt/2;
 
-      cBody.x += cBody.x - 
+        var prev_ax = ax;
+        var prev_ay = ay;
+        fx = fy = 0;
 
+        for (var b = 0; b < pBodies.length; b++) {
+          calculateGForce(cBody, pBodies[b], F);
+          fx -= F.x;
+          fy -= F.y;
+        }
+        ax = fx / cBody.mass * dt;
+        ay = fy / cBody.mass * dt;
 
+        cBody.vx = cBody.vx + (prev_ax + ax)/2 * dt
+        cBody.vy = cBody.vy + (prev_ay + ay)/2 * dt
 
-
-
-
+        context.lineTo(toCanvasCoordX(cBody), toCanvasCoordY(cBody));
+      } 
       context.stroke();
     }
   }
@@ -400,7 +415,7 @@ MODES = {
   function renderOrbit(body, pBodies, orbits_canvas, orbit_context, context) {
    var nx = toCanvasCoordX(body);
    var ny = toCanvasCoordY(body);
-   orbit_context.fillRect(nx, ny, 2, 2);
+   orbit_context.fillRect(nx, ny, 2, 2);  
    context.drawImage(orbits_canvas, 0, 0);
   }
 
