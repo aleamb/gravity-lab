@@ -359,7 +359,7 @@ MODES = {
 
     if (pBodies.length >= 1) {
       var bx,by, nx, ny;
-      var dt = 0.5;
+      var dt = 0.03;
       cBody.mass = body.mass;
       cBody.x = toUniverseCoordX(body);
       cBody.y = toUniverseCoordY(body);
@@ -370,72 +370,29 @@ MODES = {
       cBody.tx = body.tx;
       cBody.ty = body.ty;
 
+      var fx = 0;
+      var fy = 0;
+
       context.beginPath();
       context.moveTo(cBody.tx, cBody.ty);
 
-      for (var i = 0; i < 8000; i++) {
-        var vx = 0;
-        var vy = 0;
-        var x = 0;
-        var y = 0;
-
-        var ivx = cBody.vx;
-        var ivy = cBody.vy;
-        var ix = cBody.x;
-        var iy = cBody.y;
-
-        for (var b = 0; b < pBodies.length; b++) {
-
-            var center = pBodies[b];
-            
-            d1.x = ix;
-            d1.y = iy;
-            d1.vx = ivx;
-            d1.vy = ivy;
-            d1.mass = cBody.mass;
-            calculateGForce(center, d1, F);
-            d1.ax = F.x / cBody.mass * dt; 
-            d1.ay = F.y / cBody.mass * dt;
-
-            d2.x = ix + 0.5 * d1.vx * dt;
-            d2.y = iy + 0.5 * d1.vy * dt;
-            d2.vx = ivx + 0.5 * d1.ax * dt;
-            d2.vy = ivy + 0.5 * d1.ay * dt;
-            d2.mass = cBody.mass;
-            calculateGForce(center, d2 , F);
-            d2.ax = F.x / cBody.mass * (dt / 2);
-            d2.ay = F.y / cBody.mass * (dt / 2);
-
-            d3.x = ix + 0.5 * d2.vx * dt;
-            d3.y = iy + 0.5 * d2.vy * dt;
-            d3.vx = ivx + 0.5 * d2.ax * (dt / 2);
-            d3.vy = ivy + 0.5 * d2.ay * (dt / 2);
-            d3.mass = cBody.mass;
-            calculateGForce(center, d3 , F);
-            d3.ax = F.x / cBody.mass * (dt / 2);
-            d3.ay = F.y / cBody.mass * (dt / 2);
-
-            d4.x = ix + d3.vx * dt;
-            d4.y = iy + d3.vy * dt;
-            d4.vx = ivx + d3.ax * dt;
-            d4.vy = ivy + d3.ay * dt;
-            d4.mass = cBody.mass;
-            calculateGForce(center, d4 , F);
-            d4.ax = F.x / cBody.mass * (dt);
-            d4.ay = F.y / cBody.mass * (dt);
-
-            x += ix + (dt/6)*(d1.vx + 2*d2.vx + 2*d3.vx + d4.vx);
-            y += iy + (dt/6)*(d1.vy + 2*d2.vy + 2*d3.vy + d4.vy);
-
-            vx += ivx + (dt/6)*(d1.ax + 2*d2.ax + 2*d3.ax + d4.ax);
-            vy += ivy + (dt/6)*(d1.ay + 2*d2.ay + 2*d3.ay + d4.ay);
-        }
-        cBody.x += vx*dt;
-        cBody.y += vy*dt;
-        cBody.vx = vx;
-        cBody.vy = vy;
-        context.lineTo(toCanvasCoordX(cBody) , toCanvasCoordY(cBody));
+      for (var b = 0; b < pBodies.length; b++) {
+        calculateGForce(cBody, pBodies[b], F);
+        fx += F.x;
+        fy += F.y;
       }
+
+      var ax = fx / cBody.mass * dt;
+      var ay = fy / cBody.mass * dt;
+      var prev
+
+      cBody.x += cBody.x - 
+
+
+
+
+
+
       context.stroke();
     }
   }
