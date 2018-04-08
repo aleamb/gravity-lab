@@ -18,7 +18,7 @@
       <label>Mass: <input id="field-mass" type="number" class="field">Kg.</label>
       <label>Vx:<input id="field-vx" type="number" class="field" step="0.5">Km/s</label>
       <label>Vy:<input id="field-vy" type="number" class="field" step="0.5">Km/s</label>
-      <div class="paraemters-actions">
+      <div class="parameters-actions">
           <button class="center-button" type="button" onclick="center()">Set</button>
       </div>
     <div>
@@ -26,6 +26,7 @@
       <label>G<input id="field-g" type="number" oninput="doGChange(this)"></label>
       <label>Scale: 1px = <input id="field-scale" type="number" step="10000" oninput="doScale(this)"> Km</label>
       <label>Velocity Scale: 1px = <input id="field-vscale" type="number" step="5" oninput="doVScale(this)"> m/s</label>
+      <label>Time Scale: 1 sec. = <input id="field-tscale" type="number" step="1000" oninput="doTScale(this)"> universe seconds</label>
       <label>Grid size: <input id="field-grid" type="number" step="5"  oninput="doGrid(this)"> m/s</label>
       <label>Enable Gravity for this object: <input id="field-proc" type="checkbox"> </label>
     </div>

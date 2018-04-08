@@ -20,7 +20,7 @@ MODES = {
   var dt = 3600; // integrate with intervales of seconds
   var GRID_SIZE = 100; // px
   var RADIUS_SCALE_THRESHOLD = 100000;  
-  var time_scale = 525600; // each second is X seconds
+  var time_scale = 800000; // each second is X seconds
   var orbits_canvas;
   var orbits_context;
   var canvas = null;
@@ -51,22 +51,7 @@ MODES = {
 
   var F = {};
   
-  function calculateGForce(body1, body2, force) {
-    var dx = body2.x - body1.x;
-    var dy = body2.y - body1.y;
-    var d2 = dx * dx + dy * dy;
-    var d = Math.sqrt(d2);
-    
-    force.mod = -G * (body1.mass * body2.mass / d2);
-  
-    // calcular componentes x, y de la fuerza
-    force.x = force.mod * (dx / d);
-    force.y = force.mod * (dy / d);
-  
-    return force;
-  }
-  
-  function calculateGForce2(body1, body2, force, g) {
+  function calculateGForce(body1, body2, force, g) {
     var dx = body2.x - body1.x;
     var dy = body2.y - body1.y;
     var d2 = dx * dx + dy * dy;
@@ -80,50 +65,50 @@ MODES = {
   
     return force;
   }
-
-  function updatePos(pBodies, pBodyIndex, delta) {
-    var body = pBodies[pBodyIndex];
-    var timestep = (delta * time_scale / 1000);
-
-    var dt = 0.2;
-    var limit = (timestep / dt) | 0;
-    for (var l = 0; l < limit; l++) {
-      var vx = 0;
-    var vy = 0;
-      for (var i = 0; i < pBodies.length; i++) {
-        if (i !== pBodyIndex) {
-            var g_force = calculateGForce(body, pBodies[i], F);
-            vx -= g_force.x / body.mass * dt;
-            vy -= g_force.y / body.mass * dt;
+  
+  function frame(t) {  
+    canvas.width|=0;
+    if (bodies.length > 0) {
+      var delta = t - t1;
+      var body;
+      var timestep = (delta * time_scale / 1000);
+      var dt = 10;
+      var limit = (timestep / dt) | 0;
+      for (var l = 0; l < limit; l++) {
+        for (var i = 0; i < bodies.length; i++) {
+          body = bodies[i];
+          if (body.proc) {
+            var fx = fy = 0;
+            for (var b = 0; b < bodies.length; b++) {
+              if (i !== b) {
+                calculateGForce(body, bodies[b], F, G);
+                fx -= F.x;
+                fy -= F.y;
+              }
+            }
+            body.vx += fx / body.mass * dt;
+            body.vy += fy / body.mass * dt;
+          }
+        }
+        for (var b = 0; b < bodies.length; b++) {
+          body = bodies[b];
+          if (body.proc) {
+            body.x += body.vx * dt;
+            body.y += body.vy * dt;
+          }
         }
       }
-      body.vx += vx;
-      body.vy += vy;
-      body.x += body.vx * dt;
-      body.y += body.vy * dt;
+      for (var b = 0; b < bodies.length; b++) {
+        body = bodies[b];
+        body.t += timestep;
+        renderBody(body, context);
+        renderInfo(body, context);
+        if (body.proc) {
+            renderOrbit(body, bodies, orbits_canvas, orbits_context, context);
+        }
+      }
     }
-    body.t += timestep;
-  }
-  
-  function frame(t) {    
-    var delta = t - t1;
-    canvas.width|=0;
 
-    for (var b = 0; b < bodies.length; b++) {
-       //for (var i = 0; i < timestep; i+=dt) {
-      if (bodies[b].proc) {
-         updatePos(bodies, b, delta)
-      }
-       //} 
-      renderBody(bodies[b], context);
-      renderInfo(bodies[b], context);
-      if (bodies[b].proc) {
-        renderOrbit(bodies[b], bodies, orbits_canvas, orbits_context, context);
-      }
-     }
-    
-      
-    t1 = t;
     if (mode === MODES.STAR) {
       renderSelectStar(newstar, context);
     } else if (mode === MODES.BODY_POINTING) {
@@ -134,11 +119,8 @@ MODES = {
         renderBodyVelocityVector(newbody, context);
         renderOrbitOnPosition(newbody, bodies,  context);
     }
-    
     renderGrid(WIDTH, HEIGHT, GRID_SIZE, context);
-    
     t1 = t;
-
     requestAnimationFrame(frame);
   }
   
@@ -223,11 +205,19 @@ MODES = {
   function doProc(obj) {
     
   }
+
+  function doGChange(obj) {
+    G = Number(obj.value);
+  }
   
   function center() {
     orbits_canvas.width |= 0;
     DESP_X = WIDTH / 2;
     DESP_Y = HEIGHT / 2;
+  }
+
+  function doTScale(obj) {
+    time_scale = Number(obj.value);
   }
   //
   
@@ -263,7 +253,7 @@ MODES = {
   }
 
   function renderInfo(body, context) {
-    context.fillText((body.t / 86400).toFixed(2), toCanvasCoordX(body)- 15, toCanvasCoordY(body) - 15);
+    context.fillText((body.t / time_scale).toFixed(2), toCanvasCoordX(body)- 15, toCanvasCoordY(body) - 15);
   }
   
   
@@ -312,7 +302,7 @@ MODES = {
 
         for (var b = 0; b < pBodies.length; b++) {
           if (body !== pBodies[b]) {
-            calculateGForce2(cBody, pBodies[b], F, g);
+            calculateGForce(cBody, pBodies[b], F, g);
             fx -= F.x;
             fy -= F.y;
           }
@@ -330,7 +320,7 @@ MODES = {
 
         for (var b = 0; b < pBodies.length; b++) {
           if (body !== pBodies[b]) {
-            calculateGForce2(cBody, pBodies[b], F, g);
+            calculateGForce(cBody, pBodies[b], F, g);
             fx -= F.x;
             fy -= F.y;
           }
@@ -626,6 +616,7 @@ MODES = {
     });
   
 */
-
+document.querySelector('#field-g').value = G;
+document.querySelector('#field-tscale').value = time_scale;
   requestAnimationFrame(frame);
   
