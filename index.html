@@ -9,28 +9,28 @@
       <div class="body-controls">
         <button class="body-button" type="button" onclick="createStar()">Star</button>
         <button class="body-button" type="button" onclick="createBody()">Body</button>
-        <button class="cancel-button" type="button">Cancel</button>
+        <button class="cancel-button" type="button" onclick="cancel()">Cancel</button>
       </div>
       <div class="body-parameters">
         <form>
           <div class="field">
             <label for="field-posx">X position</label>
             <input id="field-posx" type="number" class="field" step="1">
-            <label>UA<input type="radio" name="scale-pos-x" checked></label>
-            <label>km<input type="radio" name="scale-pos-x"></label>
+            <label>UA<input type="radio" name="scale-pos-x" value="ua" checked></label>
+            <label>km<input type="radio" name="scale-pos-x" value="km"></label>
           </div>
           <div class="field">
             <label for="field-posy">Y position</label>
             <input id="field-posy" type="number" class="field" step="1">
-            <label>UA<input type="radio" name="scale-pos-y" checked></label>
-            <label>km<input type="radio" name="scale-pos-y"></label>
+            <label>UA<input type="radio" name="scale-pos-y" checked value="ua"></label>
+            <label>km<input type="radio" name="scale-pos-y" value="km"></label>
           </div>
           <div class="field">
             <label>Mass (Kg)</label>
             <input id="field-mass" type="number" class="field">
           </div>
           <div class="field">
-            <label>Enable gravity<input id="field-proc" type="checkbox"></label>
+            <label>Enable gravity<input id="field-proc" type="checkbox" checked></label>
           </div>
           <div class="field">
             <label>Vx (Km/s)</label>
@@ -46,10 +46,11 @@
          </div>
          <div class="field">
             <label for="color">Color:</label>
-            <input type="color" value="#ff0000" id="color">
+            <input type="color" value="#ff0000" id="field-color">
          </div>
+         <span id="messages"></span>
           <div class="parameters-actions">
-              <button class="center-button" type="button" onclick="setNewBody()">Set</button>
+              <button class="center-button" type="button" onclick="setNewBody()">Create</button>
           </div>
         </form>
       </div>

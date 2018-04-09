@@ -498,27 +498,47 @@ function resetTime() {
   }
 
   function setNewBody() {
-    bodies.push({
+    var is_ua_x = document.querySelector("input[name='scale-pos-x']:checked").value === 'ua';
+    var is_ua_y = document.querySelector("input[name='scale-pos-y']:checked").value === 'ua';
 
-      x: Number(document.querySelector('#')),
-      y: 0,
-
-      vx: 10,
-      vy: 10,
-      radius: 6374,
-      
-      mass: 5e24,
+    var body = {
+      type: BODY_TYPES.PLANET,
+      x: Number(document.querySelector('#field-posx').value) * (is_ua_x ? UA : 1000),
+      y: Number(document.querySelector('#field-posy').value) * (is_ua_y ? UA : 1000),
+      vx: Number(document.querySelector('#field-vx').value) * 1000,
+      vy: Number(document.querySelector('#field-vy').value) * 1000,
+      radius: Number(document.querySelector('#field-radius').value) / 2,
+      mass: Number(document.querySelector('#field-mass').value),
+      proc: Number(document.querySelector('#field-proc').checked),
+      color: document.querySelector('#field-color').value,
       tx: 0,
       ty: 0,
       tvx: 0,
       tvy: 0,
-      type: BODY_TYPES.PLANET,
-      proc: true,
       ox: 0,
       oy: 0,
       t: 0,
-      color: 'rgba(' + (Math.random() * 255|0) + ',' + (Math.random() * 255|0) + ',' + (Math.random() * 255|0) +', 1.0)'
-    });
+    };
+
+    if (!validateBody(body)) {
+      document.querySelector('#messages').innerHTML = 'Datos no válidos';
+      return;
+    }
+    document.querySelector('#messages').innerHTML = '';
+    bodies.push(body);
+  }
+
+  function validateBody(body) {
+    return !isNaN(body.x) && !isNaN(body.y) && !isNaN(body.vx) && !isNaN(body.vy) && !isNaN(body.mass) && !isNaN(body.radius); 
+  }
+
+  function cancel() {
+    mode = MODES.POINTER;
+    newbody = newstar = null;
+  }
+
+  function clearParameters() {
+
   }
 
   canvas = document.getElementById('c');
@@ -636,45 +656,6 @@ function resetTime() {
   t1 = 0;
   totalTime = 0;
 
-/*
-  bodies.push(
-    {
-      type : BODY_TYPES.STAR,
-      vx: 0,
-      vy: 0,
-      ox: 0,
-      oy: 0,
-      ovx: 0,
-      ovy: 0,
-      radius: 100,
-      proc: false,
-      x: 0,
-      y: 0,
-      t: 0,
-      mass: 1.98e30
-    }
-  );
-
-  bodies.push(
-    {
-      type : BODY_TYPES.PLANET,
-      vx: 0,
-      vy: 26.50 * 1000,
-      ovx: 0,
-      ovy: 26.50 * 1000,
-      ox: 206.62e6 * 1000,
-      oy: 0,
-      radius: 10,
-      proc: true,
-      x: 	206.62e6 * 1000,
-      y: 0,
-      t: 0,
-      mass: 0.64171e24,
-      e: 0.093315,
-      sm: 227.92e6 * 1000
-    });
-  
-*/
 document.querySelector('#field-g').value = G;
 document.querySelector('#field-tscale').value = time_scale;
   requestAnimationFrame(frame);
