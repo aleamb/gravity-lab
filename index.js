@@ -111,11 +111,12 @@ MODES = {
 
       for (var b = 0; b < bodies.length; b++) {
         body = bodies[b];
+        if (body.proc) {
+          renderOrbit(body, bodies, orbits_canvas, orbits_context, context);
+        }
         renderBody(body, context);
         renderInfo(body, context);
-        if (body.proc) {
-            renderOrbit(body, bodies, orbits_canvas, orbits_context, context);
-        }
+        
       }
     }
 
@@ -147,7 +148,8 @@ MODES = {
       mass: 1.98e30,
       tx: 0,
       ty: 0,
-      type: BODY_TYPES.STAR
+      type: BODY_TYPES.STAR,
+      color: '#ffff00'
     };
     
     var massInput = document.querySelector('#field-mass');
@@ -172,7 +174,7 @@ MODES = {
      mode = MODES.BODY_POINTING;
      newbody = 
      { 
-        vx: 10,
+      vx: 10,
       vy: 10,
       radius: 6374,
       x: 0,
@@ -186,7 +188,8 @@ MODES = {
       proc: true,
       ox: 0,
       oy: 0,
-      t: 0
+      t: 0,
+      color: 'rgba(' + (Math.random() * 255|0) + ',' + (Math.random() * 255|0) + ',' + (Math.random() * 255|0) +', 1.0)'
    };
     
     var massInput = document.querySelector('#field-mass');
@@ -233,15 +236,15 @@ MODES = {
   //
   
   function renderSelectStar(body, context) {
-    context.fillStyle = 'black';
     context.beginPath();
+    context.fillStyle = body.color;
    context.arc((body.tx) ,  (body.ty) , (1/SCALE >= RADIUS_SCALE_THRESHOLD) ? 8 : 
                Number(document.querySelector('#field-radius').value) * SCALE * 1000, 0, 2 * Math.PI);
     context.fill();
   }
   function renderSelectBody(body, context) {
-    context.fillStyle = 'black';
     context.beginPath();
+    context.fillStyle = body.color;
     context.arc((body.tx) ,  (body.ty) , (1/SCALE >= RADIUS_SCALE_THRESHOLD) ? 8 : 
                Number(document.querySelector('#field-radius').value) * SCALE * 1000, 0, 2 * Math.PI);
     
@@ -256,9 +259,9 @@ MODES = {
   }
   
   function renderBody(body, ctx, render_radius) {
-    ctx.fillStyle = body.color;
+
     ctx.beginPath();
-    
+    ctx.fillStyle = body.color;
     ctx.arc((body.x * SCALE) + DESP_X,  (body.y * SCALE) + DESP_Y, render_radius ? body.radius : (((1/SCALE >= RADIUS_SCALE_THRESHOLD)) ? 8 : (body.radius) * SCALE), 0, 2 * Math.PI);
     ctx.fill();
   }
@@ -358,6 +361,7 @@ MODES = {
   function renderOrbit(body, pBodies, orbits_canvas, orbit_context, context) {
    var nx = toCanvasCoordX(body);
    var ny = toCanvasCoordY(body);
+   orbit_context.fillStyle=body.color;
    orbit_context.fillRect(nx, ny, 2, 2);  
    context.drawImage(orbits_canvas, 0, 0);
 
@@ -493,6 +497,30 @@ function resetTime() {
     document.querySelector('#play-button').innerHTML = playing ? '■' : '▶';
   }
 
+  function setNewBody() {
+    bodies.push({
+
+      x: Number(document.querySelector('#')),
+      y: 0,
+
+      vx: 10,
+      vy: 10,
+      radius: 6374,
+      
+      mass: 5e24,
+      tx: 0,
+      ty: 0,
+      tvx: 0,
+      tvy: 0,
+      type: BODY_TYPES.PLANET,
+      proc: true,
+      ox: 0,
+      oy: 0,
+      t: 0,
+      color: 'rgba(' + (Math.random() * 255|0) + ',' + (Math.random() * 255|0) + ',' + (Math.random() * 255|0) +', 1.0)'
+    });
+  }
+
   canvas = document.getElementById('c');
   orbits_canvas = document.getElementById('backcanvas');
 
@@ -548,9 +576,10 @@ function resetTime() {
       case MODES.STAR:
         bodies.push(
           {
-             type : BODY_TYPES.STAR,
+            type : BODY_TYPES.STAR,
             vx: 0,
             vy: 0,
+            color: newstar.color,
             proc: document.querySelector('#field-proc').checked,
             radius: Number(document.querySelector('#field-radius').value) * 1000,
             x: (e.layerX - DESP_X) / SCALE,
@@ -572,6 +601,7 @@ function resetTime() {
             proc: document.querySelector('#field-proc').checked,
             x: (newbody.tx - DESP_X) / SCALE,
             y: (newbody.ty - DESP_Y) / SCALE,
+            color: newbody.color,
             t: 0,
             orbit: [],
 
