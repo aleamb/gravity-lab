@@ -29,13 +29,13 @@ MODES = {
   var totalTime = 0;
   var selected = null;
 
-  var WIDTH = 1700;
-  var HEIGHT = 700;
+  var WIDTH = 0;
+  var HEIGHT = 0;
   
   var t1 = 0;
   var mode = MODES.pointer;
-  var DESP_X = WIDTH / 2;
-  var DESP_Y = HEIGHT / 2;
+  var DESP_X = 0;
+  var DESP_Y = 0;
   var mx = 0;
   var my = 0;
   var orbits_buffer;
@@ -53,6 +53,9 @@ MODES = {
   var d0 = d1 = d2 = d3 = d4 = {x:0, y: 0, vx: 0, vy: 0};
 
   var F = {};
+
+  var requestCenter = true;
+  var requestResizeBackCanvas = true;
   
   function calculateGForce(body1, body2, force, g) {
     var dx = body2.x - body1.x;
@@ -70,7 +73,8 @@ MODES = {
   }
   
   function frame(t) {  
-    canvas.width|=0;
+
+    resizeCanvas(context, orbits_context);
 
     var delta = t - t1;
     var timestep = (delta * time_scale / 1000);
@@ -137,6 +141,25 @@ MODES = {
     requestAnimationFrame(frame);
   }
   
+  function resizeCanvas(ctx, orbit_ctx) {
+    WIDTH = canvas.clientWidth;
+    HEIGHT = canvas.clientHeight;
+
+    canvas.width = WIDTH;
+    canvas.height = HEIGHT;
+
+    if (requestCenter) {
+     DESP_X = WIDTH / 2;
+     DESP_Y = HEIGHT / 2;
+     center();
+     requestCenter = false;
+    }
+    if (requestResizeBackCanvas) {
+      orbits_canvas.width = WIDTH;
+      orbits_canvas.height = HEIGHT;
+      requestResizeBackCanvas = false;
+    }
+  }
   function createStar() {
     mode = MODES.STAR;
     newstar = {
@@ -164,11 +187,11 @@ MODES = {
   function eraseAll() {
     bodies = [];
     mode = MODES.POINTER;
-    center();
     showProperties();
     GRID_SIZE = 100;
     V_SCALE = 500;
     SCALE = 1 / (10e8);
+    requestCenter = true;
   }
 
   function createBody() {
@@ -449,9 +472,9 @@ MODES = {
     context .strokeStyle = 'rgba(100,100,100, 0.5)';
     for (var i = (DESP_X - w/2)%g ; i < w; i+=g) {
   
-        context.beginPath();
+      context.beginPath();
       context.moveTo(i+(g/2), 0);
-       context.lineTo(i+(g/2), h);
+      context.lineTo(i+(g/2), h);
         
       context.stroke();
       
@@ -566,39 +589,39 @@ function resetTime() {
       context.stroke();
     }
   }
+
+
   canvas = document.getElementById('c');
   orbits_canvas = document.getElementById('backcanvas');
-
-  canvas.width = WIDTH;
-  canvas.height = HEIGHT;
-  orbits_canvas.width = WIDTH;
-  orbits_canvas.height = HEIGHT;
-
   context = canvas.getContext('2d');
-
   orbits_context = orbits_canvas.getContext('2d');
 
   canvas.onmousemove=(e)=>{
-    renderMousePos(e.layerX, e.layerY);
+
+    var px = e.clientX - canvas.offsetLeft;
+    var py = e.clientY - canvas.offsetTop;
+
+    renderMousePos(px, py);
+
     switch (mode) {
       case MODES.MOVE:
-        DESP_X += (e.layerX - mx);
-        DESP_Y += (e.layerY - my);
+        DESP_X += (px - mx);
+        DESP_Y += (py - my);
         orbits_canvas.width |= 0;
-        mx = e.layerX;
-        my = e.layerY;
+        mx = px;
+        my = py;
         break;
       case MODES.STAR:
-        newstar.tx = e.layerX;
-        newstar.ty = e.layerY;
+        newstar.tx = px;
+        newstar.ty = py;
         break;
       case MODES.BODY_POINTING:
-        newbody.tx = e.layerX;
-        newbody.ty = e.layerY;
+        newbody.tx = px;
+        newbody.ty = py;
         break;
       case MODES.BODY_VELOCITY:
-        newbody.tvx = e.layerX;
-        newbody.tvy = e.layerY;
+        newbody.tvx = px;
+        newbody.tvy = py;
         
         var vxInput = document.querySelector('#field-vx');
         var vyInput = document.querySelector('#field-vy');
@@ -611,9 +634,13 @@ function resetTime() {
   }
   
   canvas.onmouseup=(e)=>{
+
+    var px = e.clientX - canvas.offsetLeft;
+    var py = e.clientY - canvas.offsetTop;
+
     switch (mode) {
       case MODES.MOVE:
-        selected = getSelected(e.layerX, e.layerY);
+        selected = getSelected(px, py);
         mode = MODES.POINTER;
         break;
       case MODES.MOVE:
@@ -628,8 +655,8 @@ function resetTime() {
             color: newstar.color,
             proc: document.querySelector('#field-proc').checked,
             radius: Number(document.querySelector('#field-radius').value) * 1000,
-            x: (e.layerX - DESP_X) / SCALE,
-            y: (e.layerY - DESP_Y) / SCALE,
+            x: (px - DESP_X) / SCALE,
+            y: (py - DESP_Y) / SCALE,
             mass: Number(document.querySelector('#field-mass').value)
           }
         );
@@ -657,8 +684,8 @@ function resetTime() {
         mode = MODES.POINTER;
         break;
       case MODES.BODY_POINTING:
-        newbody.tx = e.layerX;
-        newbody.ty = e.layerY;
+        newbody.tx = px;
+        newbody.ty = py;
         newbody.tvx = newbody.tx;
         newbody.tvy = newbody.ty;
         mode = MODES.BODY_VELOCITY;
@@ -669,20 +696,17 @@ function resetTime() {
     
     switch (mode) {
       case MODES.POINTER:
-        mx = e.layerX;
-        my = e.layerY;
+        mx = e.clientX - canvas.offsetLeft;
+        my = e.clientY - canvas.offsetTop;
         mode = MODES.MOVE;
         break;
     }
   }
-
-
-
-  eraseAll();
-  t1 = 0;
-  totalTime = 0;
+eraseAll();
+t1 = 0;
+totalTime = 0;
 
 document.querySelector('#field-g').value = G;
 document.querySelector('#field-tscale').value = time_scale;
-  requestAnimationFrame(frame);
+requestAnimationFrame(frame);
   
