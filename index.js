@@ -25,6 +25,9 @@ MODES = {
   var orbits_context;
   var canvas = null;
   var context = null;
+  var playing = true;
+  var totalTime = 0;
+  var selected = null;
 
   var WIDTH = 1700;
   var HEIGHT = 700;
@@ -68,39 +71,46 @@ MODES = {
   
   function frame(t) {  
     canvas.width|=0;
+
+    var delta = t - t1;
+    var timestep = (delta * time_scale / 1000);
+
+    if (playing) {
+      totalTime += timestep;
+    }
     if (bodies.length > 0) {
-      var delta = t - t1;
       var body;
-      var timestep = (delta * time_scale / 1000);
       var dt = 10;
       var limit = (timestep / dt) | 0;
-      for (var l = 0; l < limit; l++) {
-        for (var i = 0; i < bodies.length; i++) {
-          body = bodies[i];
-          if (body.proc) {
-            var fx = fy = 0;
-            for (var b = 0; b < bodies.length; b++) {
-              if (i !== b) {
-                calculateGForce(body, bodies[b], F, G);
-                fx -= F.x;
-                fy -= F.y;
+      if (playing) {
+        for (var l = 0; l < limit; l++) {
+          for (var i = 0; i < bodies.length; i++) {
+            body = bodies[i];
+            if (body.proc) {
+              var fx = fy = 0;
+              for (var b = 0; b < bodies.length; b++) {
+                if (i !== b) {
+                  calculateGForce(body, bodies[b], F, G);
+                  fx -= F.x;
+                  fy -= F.y;
+                }
               }
+              body.vx += fx / body.mass * dt;
+              body.vy += fy / body.mass * dt;
             }
-            body.vx += fx / body.mass * dt;
-            body.vy += fy / body.mass * dt;
           }
-        }
-        for (var b = 0; b < bodies.length; b++) {
-          body = bodies[b];
-          if (body.proc) {
-            body.x += body.vx * dt;
-            body.y += body.vy * dt;
+          for (var b = 0; b < bodies.length; b++) {
+            body = bodies[b];
+            if (body.proc) {
+              body.x += body.vx * dt;
+              body.y += body.vy * dt;
+            }
           }
         }
       }
+
       for (var b = 0; b < bodies.length; b++) {
         body = bodies[b];
-        body.t += timestep;
         renderBody(body, context);
         renderInfo(body, context);
         if (body.proc) {
@@ -120,6 +130,7 @@ MODES = {
         renderOrbitOnPosition(newbody, bodies,  context);
     }
     renderGrid(WIDTH, HEIGHT, GRID_SIZE, context);
+    renderTime();
     t1 = t;
     requestAnimationFrame(frame);
   }
@@ -253,9 +264,16 @@ MODES = {
   }
 
   function renderInfo(body, context) {
-    context.fillText((body.t / time_scale).toFixed(2), toCanvasCoordX(body)- 15, toCanvasCoordY(body) - 15);
+    //context.fillText((body.t / time_scale).toFixed(2), toCanvasCoordX(body)- 15, toCanvasCoordY(body) - 15);
   }
-  
+
+  function renderTime(t) {
+    document.querySelector("#info-years").innerHTML = (totalTime / (86400 * 365))|0;
+    document.querySelector("#info-days").innerHTML = (totalTime / 86400 % 365) | 0;
+    document.querySelector("#info-hours").innerHTML = ((totalTime / 3600) % 24) | 0;
+    document.querySelector("#info-minutes").innerHTML = (totalTime / 60 % 60) | 0;
+    document.querySelector("#info-seconds").innerHTML = (totalTime % 60)|0;
+  }
   
   function renderDistance(body, bodies, context) {
     for (var i = 0; i < bodies.length; i++) {
@@ -467,6 +485,13 @@ MODES = {
     document.querySelector('#my').innerHTML = y - DESP_Y;
     
   }
+function resetTime() {
+  totalTime = 0;
+}
+  function play_stop() {
+    playing = !playing;
+    document.querySelector('#play-button').innerHTML = playing ? '■' : '▶';
+  }
 
   canvas = document.getElementById('c');
   orbits_canvas = document.getElementById('backcanvas');
@@ -514,6 +539,9 @@ MODES = {
   
   canvas.onmouseup=(e)=>{
     switch (mode) {
+      case MODES.POINTER:
+        
+        break;
       case MODES.MOVE:
         mode = MODES.POINTER;
         break;
@@ -576,6 +604,7 @@ MODES = {
 
   eraseAll();
   t1 = 0;
+  totalTime = 0;
 
 /*
   bodies.push(
