@@ -80,7 +80,7 @@ MODES = {
     }
     if (bodies.length > 0) {
       var body;
-      var dt = 10;
+      var dt = 0.5;
       var limit = (timestep / dt) | 0;
       if (playing) {
         for (var l = 0; l < limit; l++) {
@@ -131,6 +131,7 @@ MODES = {
         renderOrbitOnPosition(newbody, bodies,  context);
     }
     renderGrid(WIDTH, HEIGHT, GRID_SIZE, context);
+    renderSelected(context);
     renderTime();
     t1 = t;
     requestAnimationFrame(frame);
@@ -541,6 +542,30 @@ function resetTime() {
 
   }
 
+  function getSelected(px, py) {
+
+    for (var i = 0; i < bodies.length; i++) {
+      var b = bodies[i];
+      var x = toCanvasCoordX(b);
+      var y = toCanvasCoordY(b);
+      if (x - 10 < px && x + 10 > px && y -10 < py && y + 10 > py) {
+        selected = b;
+        return b;
+      }
+    }
+    return null;
+  }
+
+  function renderSelected(context) {
+    if (selected) {
+      var x = toCanvasCoordX(selected);
+      var y = toCanvasCoordY(selected);
+      context.beginPath();
+      context.strokeStyle = 'gray';
+      context.arc(x, y, (1/SCALE >= RADIUS_SCALE_THRESHOLD) ? 15 : body.radius * SCALE, 0, 2 * Math.PI);
+      context.stroke();
+    }
+  }
   canvas = document.getElementById('c');
   orbits_canvas = document.getElementById('backcanvas');
 
@@ -587,8 +612,9 @@ function resetTime() {
   
   canvas.onmouseup=(e)=>{
     switch (mode) {
-      case MODES.POINTER:
-        
+      case MODES.MOVE:
+        selected = getSelected(e.layerX, e.layerY);
+        mode = MODES.POINTER;
         break;
       case MODES.MOVE:
         mode = MODES.POINTER;
