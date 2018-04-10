@@ -1,3 +1,6 @@
+const numberFormatter = require("number-formatter");
+
+const gbl = window || global;
 
 MODES = {
     POINTER: 1,
@@ -165,7 +168,7 @@ MODES = {
       requestResizeBackCanvas = false;
     }
   }
-  function createStar() {
+  gbl.createStar = function() {
     mode = MODES.STAR;
     newstar = {
       proc: false,
@@ -189,7 +192,7 @@ MODES = {
   }
   
   
-  function eraseAll() {
+  gbl.eraseAll = function() {
     bodies =   [];
     mode = MODES.POINTER;
     GRID_SIZE = 100;
@@ -200,7 +203,7 @@ MODES = {
   }
 
 
-  function createBody() {
+  gbl. createBody = function() {
      mode = MODES.BODY_POINTING;
      newbody = 
      { 
@@ -234,11 +237,11 @@ MODES = {
     massInput.focus();
   }
   
-  function doScale(obj) {
+  gbl. doScale = function(obj) {
     scale(Number(obj.value));
   }
   
-  function scale(v) {
+  gbl. scale = function(v) {
     orbits_canvas.width |= 0;
     SCALE = 1 / (1000 * v);
     if (selected) {
@@ -246,16 +249,12 @@ MODES = {
       DESP_Y +=  HEIGHT /2- toCanvasCoordY(selected);
     }
   }
-  
-  function doProc(obj) {
-    
-  }
 
-  function doGChange(obj) {
+  gbl. doGChange = function(obj) {
     G = Number(obj.value);
   }
   
-  function center() {
+  gbl. center = function() {
     orbits_canvas.width |= 0;
     DESP_X = WIDTH / 2;
     DESP_Y = HEIGHT / 2;
@@ -265,7 +264,7 @@ MODES = {
     }
   }
 
-  function doTScale(obj) {
+  gbl. doTScale = function(obj) {
     time_scale = Number(obj.value);
   }
   //
@@ -302,8 +301,8 @@ MODES = {
   function renderInfo(body, context) {
     //context.fillText((body.t / time_scale).toFixed(2), toCanvasCoordX(body)- 15, toCanvasCoordY(body) - 15);
     if (selected) {
-      var is_ua_x = document.querySelector("input[name='scale-pos-x']:checked").value === 'ua';
-      var is_ua_y = document.querySelector("input[name='scale-pos-y']:checked").value === 'ua';
+      var is_ua_x = document.querySelector("input[name='scale-pos']:checked").value === 'ua';
+      var is_ua_y = document.querySelector("input[name='scale-pos']:checked").value === 'ua';
 
      // document.querySelector('#field-radius').value = selected.radius * 2;
       document.querySelector('#body-info-mass').innerHTML = selected.mass.toExponential();
@@ -318,11 +317,11 @@ MODES = {
   }
 
   function renderTime(t) {
-    document.querySelector("#info-years").innerHTML = (totalTime / (86400 * 365))|0;
-    document.querySelector("#info-days").innerHTML = (totalTime / 86400 % 365) | 0;
-    document.querySelector("#info-hours").innerHTML = ((totalTime / 3600) % 24) | 0;
-    document.querySelector("#info-minutes").innerHTML = (totalTime / 60 % 60) | 0;
-    document.querySelector("#info-seconds").innerHTML = (totalTime % 60)|0;
+    document.querySelector("#info-years").innerHTML = numberFormatter('000', (totalTime / (86400 * 365))|0);
+    document.querySelector("#info-days").innerHTML = numberFormatter('000', (totalTime / 86400 % 365) | 0);
+    document.querySelector("#info-hours").innerHTML = numberFormatter('00', ((totalTime / 3600) % 24) | 0);
+    document.querySelector("#info-minutes").innerHTML = numberFormatter('00', (totalTime / 60 % 60) | 0);
+    document.querySelector("#info-seconds").innerHTML = numberFormatter('00', (totalTime % 60)|0);
   }
   
   function renderDistance(body, bodies, context) {
@@ -510,11 +509,11 @@ MODES = {
     return Math.sqrt(dx*dx + dy*dy) / (SCALE);
   }
   
-  function doVScale(obj) {
+  gbl. doVScale = function(obj) {
     V_SCALE = Number(obj.value);
   }
   
-  function doGrid(obj) {
+  gbl. doGrid = function(obj) {
     GRID_SIZE = Number(obj.value);
   }
   
@@ -557,7 +556,7 @@ MODES = {
   }
   
   function showProperties() {
-    document.querySelector('#field-scale').value = (1 / (SCALE*1000));
+    document.querySelector('#field-scale').value = (1 / (SCALE*1000)).toFixed(0);
   document.querySelector('#field-vscale').value = (V_SCALE);
   document.querySelector('#field-grid').value = (GRID_SIZE);
   }
@@ -567,17 +566,17 @@ MODES = {
     document.querySelector('#my').innerHTML = y - DESP_Y;
     
   }
-function resetTime() {
+  gbl. resetTime = function() {
   totalTime = 0;
 }
-  function play_stop() {
+gbl. play_stop = function() {
     playing = !playing;
     document.querySelector('#play-button').innerHTML = playing ? '■' : '▶';
   }
 
-  function setNewBody() {
-    var is_ua_x = document.querySelector("input[name='scale-pos-x']:checked").value === 'ua';
-    var is_ua_y = document.querySelector("input[name='scale-pos-y']:checked").value === 'ua';
+  gbl. setNewBody = function() {
+    var is_ua_x = document.querySelector("input[name='scale-pos']:checked").value === 'ua';
+    var is_ua_y = document.querySelector("input[name='scale-pos']:checked").value === 'ua';
 
     var body = {
       type: BODY_TYPES.PLANET,
@@ -612,14 +611,11 @@ function resetTime() {
     return !isNaN(body.x) && !isNaN(body.y) && !isNaN(body.vx) && !isNaN(body.vy) && !isNaN(body.mass) && !isNaN(body.radius); 
   }
 
-  function cancel() {
+  gbl. cancel = function() {
     mode = MODES.POINTER;
     newbody = newstar = null;
   }
 
-  function clearParameters() {
-
-  }
 
   function getSelected(px, py) {
 
@@ -648,7 +644,7 @@ function resetTime() {
     }
   }
 
-  function updateBody() {
+  gbl. updateBody = function() {
     if (selected) {
       selected.radius =  Number(document.querySelector('#field-radius').value) * 1000 / 2;
       selected.mass = Number(document.querySelector('#field-mass').value);

@@ -1,23 +1,27 @@
 {
-  "name": "gravity-simulator",
+  "name": "gravity-lab",
   "version": "1.0.0",
-  "description": "Gravity simulator",
-  "main": "index.js",
+  "description": "Gravity laboratoy",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aleamb/gravity-simulator.git"
+    "url": "git+https://github.com/aleamb/gravity-lab.git"
   },
   "author": "Alejandro Ambroa",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/aleamb/gravity-simulator/issues"
+    "url": "https://github.com/aleamb/gravity-lab/issues"
   },
-  "homepage": "https://github.com/aleamb/gravity-simulator#readme",
+  "homepage": "https://github.com/aleamb/gravity-lab#readme",
   "devDependencies": {
     "browser-sync": "^2.23.6",
-    "gulp": "^3.9.1"
+    "gulp": "^3.9.1",
+    "gulp-browserify": "^0.5.1"
+  },
+  "dependencies": {
+    "number-formatter": "^1.2.0"
   }
 }

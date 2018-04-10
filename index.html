@@ -19,46 +19,47 @@
         <form>
             <fieldset>
               <legend>Body parameters</legend>
-            <div class="field">
-              <label for="field-posx">X position</label>
-              <input id="field-posx" type="number" class="field" step="1">
-              UA<input type="radio" name="scale-pos-x" value="ua" checked>
-              Km<input type="radio" name="scale-pos-x" value="km">
-            </div>
-            <div class="field">
-              <label for="field-posy">Y position</label>
-              <input id="field-posy" type="number" class="field" step="1">
-              UA<input type="radio" name="scale-pos-y" checked value="ua">
-              Km<input type="radio" name="scale-pos-y" value="km">
-            </div>
-            <div class="field">
-              <label>Mass (Kg)</label>
-              <input id="field-mass" type="number"class="field">
-            </div>
-            <div class="field">
-              <label>Enable gravity<input id="field-proc" type="checkbox" checked></label>
-            </div>
-            <div class="field">
-              <label>Vx (Km/s)</label>
-              <input id="field-vx" type="number" class="field" step="10">
-            </div>
-            <div class="field">
-              <label>Vy (Km/s)</label>
-              <input id="field-vy" type="number" class="field" step="10">
-            </div>
-            <div class="field">
-              <label>Diameter (Km)</label>
-              <input id="field-radius" type="number" class="field" step="5">
-          </div>
-          <div class="field">
-              <label for="color">Color</label>
-              <input type="color" value="#ff0000" id="field-color">
-          </div>
-          <span id="messages"></span>
-            <div class="parameters-actions">
-                <button class="center-button" type="button" onclick="setNewBody()">Create</button>
-                <button class="center-button" type="button" onclick="updateBody()">Update</button>
-            </div>
+              <div class="field xpos">
+                <label for="field-posx">X position</label>
+                <input id="field-posx" type="number" step="1">
+              </div>
+              <div class="field ypos">
+                <label for="field-posy">Y position</label>
+                <input id="field-posy" type="number" step="1">
+              </div>
+              <div class="field distance-scale">
+                UA<input type="radio" name="scale-pos" checked value="ua">
+                Km<input type="radio" name="scale-pos" value="km">
+              </div>
+              <div class="field field-mass">
+                <label>Mass (Kg)</label>
+                <input id="field-mass" type="number" >
+              </div>
+              <div class="field field-gravity">
+                <label>Enable gravity</label><input id="field-proc" type="checkbox" checked>
+              </div>
+              <div></div>
+              <div class="field field-vx">
+                <label>Vx (Km/s)</label>
+                <input id="field-vx" type="number" step="10">
+              </div>
+              <div class="field field-vy">
+                <label>Vy (Km/s)</label>
+                <input id="field-vy" type="number" step="10">
+              </div>
+              <div class="field field-radius">
+                <label>Diameter (Km)</label>
+                <input id="field-radius" type="number" step="5">
+              </div>
+              <div class="field">
+                <label for="color">Color</label>
+                <input type="color" value="#ff0000" id="field-color">
+              </div>
+              <span id="messages"></span>
+              <div class="parameters-actions">
+                  <button class="center-button" type="button" onclick="setNewBody()">Create</button>
+                  <button class="center-button" type="button" onclick="updateBody()">Update</button>
+              </div>
           </fieldset>
         </form>
       </div>
@@ -93,7 +94,7 @@
 
     <div class="data-info">
         <div>
-          <span>Screen Pos: </span><span id="mx"></span>,<span id="my"></span>x
+          <span>Screen Pos: </span><span id="mx"></span>,<span id="my"></span>
         </div>
         <div>
             <span>Time: </span><span id="info-years"></span>y - <span id="info-days"></span>d - <span id="info-hours"></span>h - <span id="info-minutes"></span>m - <span id="info-seconds"></span>s
@@ -105,6 +106,6 @@
       <canvas id="backcanvas" style="display: none"></canvas>
     </div>
 
-    <script src="index.js"></script>
+    <script src="dist/index.js"></script>
   </body>
 </html>
