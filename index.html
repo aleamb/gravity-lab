@@ -7,80 +7,96 @@
   <body>
     <div class="controls">
       <div class="body-controls">
-        <button class="body-button" type="button" onclick="createStar()">Star</button>
-        <button class="body-button" type="button" onclick="createBody()">Body</button>
-        <button class="cancel-button" type="button" onclick="cancel()">Cancel</button>
+        <fieldset>
+          <legend>Preset</legend>
+          <button class="body-button" type="button" onclick="createStar()">Star</button>
+          <button class="body-button" type="button" onclick="createBody()">Body</button>
+          <button class="cancel-button" type="button" onclick="cancel()">Cancel</button>
+        </fieldset>
+       
       </div>
       <div class="body-parameters">
         <form>
-          <div class="field">
-            <label for="field-posx">X position</label>
-            <input id="field-posx" type="number" class="field" step="1">
-            <label>UA<input type="radio" name="scale-pos-x" value="ua" checked></label>
-            <label>km<input type="radio" name="scale-pos-x" value="km"></label>
+            <fieldset>
+              <legend>Body parameters</legend>
+            <div class="field">
+              <label for="field-posx">X position</label>
+              <input id="field-posx" type="number" class="field" step="1">
+              UA<input type="radio" name="scale-pos-x" value="ua" checked>
+              Km<input type="radio" name="scale-pos-x" value="km">
+            </div>
+            <div class="field">
+              <label for="field-posy">Y position</label>
+              <input id="field-posy" type="number" class="field" step="1">
+              UA<input type="radio" name="scale-pos-y" checked value="ua">
+              Km<input type="radio" name="scale-pos-y" value="km">
+            </div>
+            <div class="field">
+              <label>Mass (Kg)</label>
+              <input id="field-mass" type="number"class="field">
+            </div>
+            <div class="field">
+              <label>Enable gravity<input id="field-proc" type="checkbox" checked></label>
+            </div>
+            <div class="field">
+              <label>Vx (Km/s)</label>
+              <input id="field-vx" type="number" class="field" step="10">
+            </div>
+            <div class="field">
+              <label>Vy (Km/s)</label>
+              <input id="field-vy" type="number" class="field" step="10">
+            </div>
+            <div class="field">
+              <label>Diameter (Km)</label>
+              <input id="field-radius" type="number" class="field" step="5">
           </div>
           <div class="field">
-            <label for="field-posy">Y position</label>
-            <input id="field-posy" type="number" class="field" step="1">
-            <label>UA<input type="radio" name="scale-pos-y" checked value="ua"></label>
-            <label>km<input type="radio" name="scale-pos-y" value="km"></label>
+              <label for="color">Color</label>
+              <input type="color" value="#ff0000" id="field-color">
           </div>
-          <div class="field">
-            <label>Mass (Kg)</label>
-            <input id="field-mass" type="number"class="field">
-          </div>
-          <div class="field">
-            <label>Enable gravity<input id="field-proc" type="checkbox" checked></label>
-          </div>
-          <div class="field">
-            <label>Vx (Km/s)</label>
-            <input id="field-vx" type="number" class="field" step="10">
-          </div>
-          <div class="field">
-            <label>Vy (Km/s)</label>
-            <input id="field-vy" type="number" class="field" step="10">
-          </div>
-          <div class="field">
-            <label>Diameter (Km)</label>
-            <input id="field-radius" type="number" class="field" step="5">
-         </div>
-         <div class="field">
-            <label for="color">Color:</label>
-            <input type="color" value="#ff0000" id="field-color">
-         </div>
-         <span id="messages"></span>
-          <div class="parameters-actions">
-              <button class="center-button" type="button" onclick="setNewBody()">Create</button>
-              <button class="center-button" type="button" onclick="updateBody()">Update</button>
-          </div>
+          <span id="messages"></span>
+            <div class="parameters-actions">
+                <button class="center-button" type="button" onclick="setNewBody()">Create</button>
+                <button class="center-button" type="button" onclick="updateBody()">Update</button>
+            </div>
+          </fieldset>
         </form>
-      </div>
-      <div class="body-info">
-        <span id="body-info-mass"></span>
       </div>
       <div class="general-parameters">
         <form>
-          <label>G<input id="field-g" type="number" oninput="doGChange(this)"></label>
-          <label>Scale: 1px = <input id="field-scale" type="number" step="10000" oninput="doScale(this)"> Km</label>
-          <label>Velocity Scale: 1px = <input id="field-vscale" type="number" step="5" oninput="doVScale(this)"> m/s</label>
-          <label>Time Scale: 1 sec. = <input id="field-tscale" type="number" step="1000" oninput="doTScale(this)"> universe seconds</label>
-          <label>Grid size: <input id="field-grid" type="number" step="5"  oninput="doGrid(this)"> m/s</label>
+           <fieldset>
+            <legend>General parameters</legend>
+              <div class="field"><label>G</label><input id="field-g" type="number" oninput="doGChange(this)"></div>
+              <div class="field"><label>Scale (Km. by pixel) </label><input id="field-scale" type="number" step="10000" oninput="doScale(this)"></div>
+              <div class="field"><label>Velocity Scale (m/s by pixel) </label><input id="field-vscale" type="number" step="5" oninput="doVScale(this)"></div>
+              <div class="field"><label>Time Scale (seconds/frame) </label><input id="field-tscale" type="number" step="1000" oninput="doTScale(this)"></div>
+              <div class="field"><label>Grid size (px): </label><input id="field-grid" type="number" step="5"  oninput="doGrid(this)"></div>
+          </fieldset>
         </form>
       </div>
       <div class="general-controls">
-          <button class="erase-button" type="button" onclick="eraseAll()">Erase All</button>
-          <button id="play-button" class="button" type="button" onclick="play_stop()">■</button>
-          <button id="reset.time" class="button" type="button" onclick="resetTime()">Reset time</button>
-          <button class="center-button" type="button" onclick="center()">Center Grid</button>
+          <fieldset>
+              <legend>General actions</legend>
+                <button class="erase-button" type="button" onclick="eraseAll()">Erase All</button>
+                <button id="play-button" class="button" type="button" onclick="play_stop()">■</button>
+                <button id="reset.time" class="button" type="button" onclick="resetTime()">Reset time</button>
+                <button class="center-button" type="button" onclick="center()">Center Grid</button>
+            </fieldset>
+      </div>
+      <div class="body-info">
+          <fieldset>
+            <legend>Body info</legend>
+            <span>Mass:</span></span></Mass><span id="body-info-mass"></span>
+          </fieldset>
       </div>
     </div>
-    
+
     <div class="data-info">
         <div>
-          <span>Mouse pos: </span><span id="mx"></span>,<span id="my"></span>
+          <span>Screen Pos: </span><span id="mx"></span>,<span id="my"></span>x
         </div>
         <div>
-            <span id="info-years"></span>y - <span id="info-days"></span>d - <span id="info-hours"></span>h - <span id="info-minutes"></span>m - <span id="info-seconds"></span>s
+            <span>Time: </span><span id="info-years"></span>y - <span id="info-days"></span>d - <span id="info-hours"></span>h - <span id="info-minutes"></span>m - <span id="info-seconds"></span>s
         </div>
     </div>
 

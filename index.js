@@ -12,14 +12,14 @@ MODES = {
     PLANET: 2
   }
   var UA = 149597870700; // meters
-  var G = 6.67428e-11
+  var G = -6.67428e-11
   var SCALE = 1 / (1e9); // 1px = SCALE meters
   var V_SCALE = 1000; // 1px = 1000 m/s
   var update_time = 50 // each second
   var timestep =  1* 24 * 3600; // advance one day
   var dt = 3600; // integrate with intervales of seconds
   var GRID_SIZE = 100; // px
-  var RADIUS_SCALE_THRESHOLD = 100000;  
+  var RADIUS_SCALE_THRESHOLD = 100000;
   var time_scale = 800000; // each second is X seconds
   var orbits_canvas;
   var orbits_context;
@@ -90,7 +90,8 @@ MODES = {
         for (var l = 0; l < limit; l++) {
           for (var i = 0; i < bodies.length; i++) {
             body = bodies[i];
-            //if (body.proc) {
+            if (body.proc) {
+
               var fx = fy = 0;
               for (var b = 0; b < bodies.length; b++) {
                 if (i !== b) {
@@ -99,25 +100,29 @@ MODES = {
                   fy += F.y;
                 }
               }
+            
+              body.fx = fx;
+              body.fy = fy;
               body.vx += fx / body.mass * dt;
               body.vy += fy / body.mass * dt;
-            //}
+            }
           }
           for (var b = 0; b < bodies.length; b++) {
             body = bodies[b];
-            //if (body.proc) {
+            if (body.proc) {
               body.x += body.vx * dt;
               body.y += body.vy * dt;
-            //}
+            }
           }
         }
       }
 
       for (var b = 0; b < bodies.length; b++) {
         body = bodies[b];
-       // if (body.proc) {
+        if (body.proc) {
           renderOrbit(body, bodies, orbits_canvas, orbits_context, context);
-        //}
+          renderVectors(body, context);
+        }
         renderBody(body, context);
         renderInfo(body, context);
         
@@ -214,6 +219,8 @@ MODES = {
       ox: 0,
       oy: 0,
       t: 0,
+      fx: 0,
+      fy: 0,
       color: 'rgba(' + (Math.random() * 255|0) + ',' + (Math.random() * 255|0) + ',' + (Math.random() * 255|0) +', 1.0)'
    };
     
@@ -282,8 +289,6 @@ MODES = {
    context.moveTo(body.tx , body.ty );
    context.lineTo(body.tvx, body.tvy);
     context.stroke();
-
-
   }
   
   function renderBody(body, ctx, render_radius) {
@@ -342,6 +347,7 @@ MODES = {
       var bx,by, nx, ny;
       var dt = 667;
       var g = G / 1000;
+      var renderv = true;
       
       cBody.mass = body.mass;
       cBody.x = toUniverseCoordX(body);
@@ -349,17 +355,30 @@ MODES = {
       cBody.vx = (body.tvx - body.tx) * V_SCALE;
       cBody.vy = (body.tvy - body.ty) * V_SCALE;  
       cBody.radius = 1; 
-      cBody.color = 'red';
+      cBody.color = 'gray';
       cBody.tx = body.tx;
       cBody.ty = body.ty;
 
       var fx = 0;
       var fy = 0;
 
+      for (var b = 0; b < pBodies.length; b++) {
+        if (body !== pBodies[b]) {
+          calculateGForce(cBody, pBodies[b], F, g);
+          fx += F.x;
+          fy += F.y;
+        }
+      }
+      cBody.fx = fx;
+      cBody.fy = fy;
+      renderVectors(cBody, context);
       // verlet velocity integration method
 
+      fx = 0;
+      fy = 0;
       context.beginPath();
       context.moveTo(cBody.tx, cBody.ty);
+      context.strokeStyle = cBody.color;
 
       for (var i = 0; i < 20000; i++) {
 
@@ -397,7 +416,23 @@ MODES = {
         context.lineTo(toCanvasCoordX(cBody), toCanvasCoordY(cBody));
       } 
       context.stroke();
+      context.closePath();
     }
+  }
+
+  function renderVectors(body, context) {
+    context.beginPath();
+    context.strokeStyle='green';
+    context.moveTo(toCanvasCoordX(body), toCanvasCoordY(body));
+    context.lineTo(toCanvasCoordX(body)+body.vx/V_SCALE, toCanvasCoordY(body)+body.vy/V_SCALE);
+    context.stroke();
+    context.closePath();
+    context.beginPath();
+    context.strokeStyle='red';
+    context.moveTo(toCanvasCoordX(body), toCanvasCoordY(body));
+    context.lineTo(toCanvasCoordX(body)+body.fx/1e19, toCanvasCoordY(body)+body.fy/1e19);
+    context.stroke();
+    context.closePath();
   }
 
   function renderOrbit(body, pBodies, orbits_canvas, orbit_context, context) {
@@ -561,6 +596,8 @@ function resetTime() {
       ox: 0,
       oy: 0,
       t: 0,
+      fx: 0,
+      fy: 0
     };
 
     if (!validateBody(body)) {
@@ -708,8 +745,8 @@ function resetTime() {
             y: (newbody.ty - DESP_Y) / SCALE,
             color: newbody.color,
             t: 0,
-            orbit: [],
-
+            fx: 0,
+            fy:0,
             mass: Number(document.querySelector('#field-mass').value)
           }
         );
