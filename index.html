@@ -27,7 +27,7 @@
           </div>
           <div class="field">
             <label>Mass (Kg)</label>
-            <input id="field-mass" type="number" class="field">
+            <input id="field-mass" type="number"class="field">
           </div>
           <div class="field">
             <label>Enable gravity<input id="field-proc" type="checkbox" checked></label>
@@ -51,8 +51,12 @@
          <span id="messages"></span>
           <div class="parameters-actions">
               <button class="center-button" type="button" onclick="setNewBody()">Create</button>
+              <button class="center-button" type="button" onclick="updateBody()">Update</button>
           </div>
         </form>
+      </div>
+      <div class="body-info">
+        <span id="body-info-mass"></span>
       </div>
       <div class="general-parameters">
         <form>

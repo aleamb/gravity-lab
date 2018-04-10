@@ -13,8 +13,8 @@ MODES = {
   }
   var UA = 149597870700; // meters
   var G = 6.67428e-11
-  var SCALE = 1 / (1e6); // 1px = SCALE meters
-  var V_SCALE = 1000; // 1px = 1000 m/S
+  var SCALE = 1 / (1e9); // 1px = SCALE meters
+  var V_SCALE = 1000; // 1px = 1000 m/s
   var update_time = 50 // each second
   var timestep =  1* 24 * 3600; // advance one day
   var dt = 3600; // integrate with intervales of seconds
@@ -63,7 +63,7 @@ MODES = {
     var d2 = dx * dx + dy * dy;
     var d = Math.sqrt(d2);
     
-    force.mod = -g * (body1.mass * body2.mass / d2);
+    force.mod = - (g * (body1.mass * body2.mass / (d*d*d))*(d));
   
     // calcular componentes x, y de la fuerza
     force.x = force.mod * (dx / d);
@@ -79,45 +79,45 @@ MODES = {
     var delta = t - t1;
     var timestep = (delta * time_scale / 1000);
 
-    if (playing) {
+    if (playing) {  
       totalTime += timestep;
-    }
+    } 
     if (bodies.length > 0) {
       var body;
-      var dt = 0.5;
+      var dt = 100;
       var limit = (timestep / dt) | 0;
       if (playing) {
         for (var l = 0; l < limit; l++) {
           for (var i = 0; i < bodies.length; i++) {
             body = bodies[i];
-            if (body.proc) {
+            //if (body.proc) {
               var fx = fy = 0;
               for (var b = 0; b < bodies.length; b++) {
                 if (i !== b) {
                   calculateGForce(body, bodies[b], F, G);
-                  fx -= F.x;
-                  fy -= F.y;
+                  fx += F.x;
+                  fy += F.y;
                 }
               }
               body.vx += fx / body.mass * dt;
               body.vy += fy / body.mass * dt;
-            }
+            //}
           }
           for (var b = 0; b < bodies.length; b++) {
             body = bodies[b];
-            if (body.proc) {
+            //if (body.proc) {
               body.x += body.vx * dt;
               body.y += body.vy * dt;
-            }
+            //}
           }
         }
       }
 
       for (var b = 0; b < bodies.length; b++) {
         body = bodies[b];
-        if (body.proc) {
+       // if (body.proc) {
           renderOrbit(body, bodies, orbits_canvas, orbits_context, context);
-        }
+        //}
         renderBody(body, context);
         renderInfo(body, context);
         
@@ -185,21 +185,22 @@ MODES = {
   
   
   function eraseAll() {
-    bodies = [];
+    bodies =   [];
     mode = MODES.POINTER;
-    showProperties();
     GRID_SIZE = 100;
-    V_SCALE = 500;
-    SCALE = 1 / (10e8);
+    V_SCALE = 1000;
+    SCALE = 1 / (1e9);
     requestCenter = true;
+    showProperties();
   }
+
 
   function createBody() {
      mode = MODES.BODY_POINTING;
      newbody = 
      { 
-      vx: 10,
-      vy: 10,
+      vx: 0,
+      vy: 0,
       radius: 6374,
       x: 0,
       y: 0,
@@ -220,14 +221,9 @@ MODES = {
     var vxInput = document.querySelector('#field-vx');
     var vyInput = document.querySelector('#field-vy');
     document.querySelector('#field-proc').checked = true;
-    massInput.disabled = false;
-    vxInput.disabled = false;
-    vyInput.disabled = false;
     massInput.value = newbody.mass;
-    
     vxInput.value = newbody.vx;
     vyInput.value = newbody.vy;
-    
     massInput.focus();
   }
   
@@ -238,6 +234,10 @@ MODES = {
   function scale(v) {
     orbits_canvas.width |= 0;
     SCALE = 1 / (1000 * v);
+    if (selected) {
+      DESP_X += WIDTH / 2 - toCanvasCoordX(selected);
+      DESP_Y +=  HEIGHT /2- toCanvasCoordY(selected);
+    }
   }
   
   function doProc(obj) {
@@ -252,6 +252,10 @@ MODES = {
     orbits_canvas.width |= 0;
     DESP_X = WIDTH / 2;
     DESP_Y = HEIGHT / 2;
+    if (selected) {
+      DESP_X += WIDTH / 2 - toCanvasCoordX(selected);
+      DESP_Y +=  HEIGHT /2- toCanvasCoordY(selected);
+    }
   }
 
   function doTScale(obj) {
@@ -286,12 +290,26 @@ MODES = {
 
     ctx.beginPath();
     ctx.fillStyle = body.color;
-    ctx.arc((body.x * SCALE) + DESP_X,  (body.y * SCALE) + DESP_Y, render_radius ? body.radius : (((1/SCALE >= RADIUS_SCALE_THRESHOLD)) ? 8 : (body.radius) * SCALE), 0, 2 * Math.PI);
+    ctx.arc((body.x * SCALE) + DESP_X,  (body.y * SCALE) + DESP_Y, render_radius ? body.radius/2 : (((1/SCALE >= RADIUS_SCALE_THRESHOLD)) ? 8 : ((body.radius/2) * SCALE)|0), 0, 2 * Math.PI);
     ctx.fill();
   }
 
   function renderInfo(body, context) {
     //context.fillText((body.t / time_scale).toFixed(2), toCanvasCoordX(body)- 15, toCanvasCoordY(body) - 15);
+    if (selected) {
+      var is_ua_x = document.querySelector("input[name='scale-pos-x']:checked").value === 'ua';
+      var is_ua_y = document.querySelector("input[name='scale-pos-y']:checked").value === 'ua';
+
+     // document.querySelector('#field-radius').value = selected.radius * 2;
+      document.querySelector('#body-info-mass').innerHTML = selected.mass.toExponential();
+      //document.querySelector('#field-proc').checked = selected.proc;
+      //document.querySelector('#field-coor').value = selected.color;
+
+      document.querySelector('#field-posx').value = (selected.x / (is_ua_x ?  UA : 1000)).toFixed(4);
+      document.querySelector('#field-posy').value  = (selected.y / (is_ua_y ? UA : 1000)).toFixed(4);
+      document.querySelector('#field-vx').value = (selected.vx / 1000).toFixed(2);
+      document.querySelector('#field-vy').value = (selected.vy / 1000).toFixed(2);
+    }
   }
 
   function renderTime(t) {
@@ -348,8 +366,8 @@ MODES = {
         for (var b = 0; b < pBodies.length; b++) {
           if (body !== pBodies[b]) {
             calculateGForce(cBody, pBodies[b], F, g);
-            fx -= F.x;
-            fy -= F.y;
+            fx += F.x;
+            fy += F.y;
           }
         }
       
@@ -366,8 +384,8 @@ MODES = {
         for (var b = 0; b < pBodies.length; b++) {
           if (body !== pBodies[b]) {
             calculateGForce(cBody, pBodies[b], F, g);
-            fx -= F.x;
-            fy -= F.y;
+            fx += F.x;
+            fy += F.y;
           }
         }
         ax = fx / cBody.mass * dt;
@@ -470,7 +488,8 @@ MODES = {
       g = 100;
     }
     context .strokeStyle = 'rgba(100,100,100, 0.5)';
-    for (var i = (DESP_X - w/2)%g ; i < w; i+=g) {
+
+    for (var i = (DESP_X)%g - (g/2) ; i < w; i+=g) {
   
       context.beginPath();
       context.moveTo(i+(g/2), 0);
@@ -480,7 +499,7 @@ MODES = {
       
       
     }
-    for (var i = (DESP_Y - h/2)%g; i < h; i+=g) {
+    for (var i = (DESP_Y)%g - (g/2); i < h; i+=g) {
         context.beginPath();
       context.moveTo(0, i+(g/2));
        context.lineTo(w, i+(g/2));
@@ -503,7 +522,7 @@ MODES = {
   }
   
   function showProperties() {
-    document.querySelector('#field-scale').value = (1 / SCALE / 1000).toFixed(1);
+    document.querySelector('#field-scale').value = (1 / (SCALE*1000));
   document.querySelector('#field-vscale').value = (V_SCALE);
   document.querySelector('#field-grid').value = (GRID_SIZE);
   }
@@ -573,6 +592,8 @@ function resetTime() {
       var y = toCanvasCoordY(b);
       if (x - 10 < px && x + 10 > px && y -10 < py && y + 10 > py) {
         selected = b;
+        document.querySelector('#field-mass').value = selected.mass.toExponential();
+        document.querySelector('#field-proc').checked = selected.proc;
         return b;
       }
     }
@@ -585,10 +606,21 @@ function resetTime() {
       var y = toCanvasCoordY(selected);
       context.beginPath();
       context.strokeStyle = 'gray';
-      context.arc(x, y, (1/SCALE >= RADIUS_SCALE_THRESHOLD) ? 15 : body.radius * SCALE, 0, 2 * Math.PI);
+      context.arc(x, y, (1/SCALE >= RADIUS_SCALE_THRESHOLD) ? 15 : 15 + ((selected.radius/2 * SCALE)|0), 0, 2 * Math.PI);
       context.stroke();
     }
   }
+
+  function updateBody() {
+    if (selected) {
+      selected.radius =  Number(document.querySelector('#field-radius').value) * 1000 / 2;
+      selected.mass = Number(document.querySelector('#field-mass').value);
+      selected.proc =  Number(document.querySelector('#field-proc').checked);
+       selected.color =  document.querySelector('#field-color').value;
+    }
+  }
+
+  //
 
 
   canvas = document.getElementById('c');
@@ -622,13 +654,13 @@ function resetTime() {
       case MODES.BODY_VELOCITY:
         newbody.tvx = px;
         newbody.tvy = py;
-        
+
         var vxInput = document.querySelector('#field-vx');
         var vyInput = document.querySelector('#field-vy');
         
-        vxInput.value = (newbody.tvx - newbody.tx) * V_SCALE;
-        vyInput.value = (newbody.tvy - newbody.ty) * V_SCALE;
-        
+        vxInput.value = (newbody.tvx - newbody.tx) * V_SCALE / 1000;
+        vyInput.value = (newbody.tvy - newbody.ty) * V_SCALE / 1000;
+  
         break;
     }
   }

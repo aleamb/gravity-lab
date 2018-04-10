@@ -4,10 +4,11 @@
 }
 body {
     font-size: 14px;
-    position: relative;
     margin: 0;
     padding: 0;
-
+    width: 100%;
+    height: 95%;
+    position: absolute;
 }
 .controls {
 
@@ -17,11 +18,11 @@ body {
 }
 
 .universe {
-
     float: left;
     width: 80%;
     margin: 0;
     padding: 0;
+    height: 100%;
 }
 #c {
    width: 100%;
