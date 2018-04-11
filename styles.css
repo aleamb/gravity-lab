@@ -55,6 +55,7 @@ legend {
 label {
     font-weight: bold;
     display: block;
+    font-size: small;
 }
 .field {
     float:left;

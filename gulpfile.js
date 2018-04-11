@@ -9,7 +9,7 @@ gulp.task('browserify', function() {
   gulp.src('index.js')
       .pipe(browserify({
         insertGlobals : true,
-        debug : !gulp.env.production
+        debug: false
       }))
       .pipe(gulp.dest('./dist'))
 });

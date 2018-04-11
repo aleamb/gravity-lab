@@ -1,29 +1,74 @@
-const numberFormatter = require("number-formatter");
+/**
+ * @file gravity-lab main program
+ * 
+ * @author Alejandro Ambroa <jandroz@gmail.com>
+ * @version 1.0.0
+ */
 
-const gbl = window || global;
+const Constants = require('./constants');
+const gravityLab = require('./gravityLab');
+const controls = require('./controls');
 
-MODES = {
-    POINTER: 1,
-    STAR: 2,
-    BODY_POINTING: 3,
-    BODY_VELOCITY: 4,
-    MOVE: 5
-  };
-  
-  BODY_TYPES = {
-    STAR: 1,
-    PLANET: 2
-  }
-  var UA = 149597870700; // meters
-  var G = -6.67428e-11
-  var SCALE = 1 / (1e9); // 1px = SCALE meters
-  var V_SCALE = 1000; // 1px = 1000 m/s
-  var update_time = 50 // each second
-  var timestep =  1* 24 * 3600; // advance one day
-  var dt = 3600; // integrate with intervales of seconds
-  var GRID_SIZE = 100; // px
-  var RADIUS_SCALE_THRESHOLD = 100000;
-  var time_scale = 800000; // each second is X seconds
+const glb = typeof window !== 'undefined' ? window : global;
+
+const MODES = {
+  POINTER: 1,
+  STAR: 2,
+  BODY_POINTING: 3,
+  BODY_VELOCITY: 4,
+  MOVE: 5
+};
+
+const BODY_TYPES = {
+  STAR: 1,
+  PLANET: 2
+}
+
+var gridSize = null;
+var velocityScale = null;
+var scale = null;
+var requestCenter = null;
+
+function init() {
+
+  gravityLab.init(glb);
+  controls.init();
+  reset();
+}
+
+function resetMode() {
+  mode = MODES.POINTER;
+}
+
+function setDefaults() {
+  gridSize = Constants.DEFAULT_GRID_SIZE;
+  velocityScale = Constants.DEFAULT_VELOCITY_SCALE;
+  scale = Constants.DEFAULT_SCALE;
+}
+
+function requestGridCenter() {
+  requestCenter = true;
+}
+
+function reset() {
+  gravityLab.reset();
+  resetMode();
+  setDefaults();
+  requestGridCenter();
+  showProperties();
+}
+
+
+function showProperties() {
+  controls.setScale(scale);
+  controls.setScale(scale);
+
+  document.querySelector('#field-scale').value = (1 / (SCALE*1000)).toFixed(0);
+  document.querySelector('#field-vscale').value = (V_SCALE);
+  document.querySelector('#field-grid').value = (GRID_SIZE);
+}
+
+/*
   var orbits_canvas;
   var orbits_context;
   var canvas = null;
@@ -50,8 +95,6 @@ MODES = {
   var cBody2= {};
   var cBody3= {};
 
-  var bodies = [
-  ];
 
   var d0 = d1 = d2 = d3 = d4 = {x:0, y: 0, vx: 0, vy: 0};
 
@@ -63,9 +106,11 @@ MODES = {
   function calculateGForce(body1, body2, force, g) {
     var dx = body2.x - body1.x;
     var dy = body2.y - body1.y;
+    if (dx === 0 && dy === 0) {
+      return { x:0, y:0, mod: 0 };
+    } 
     var d2 = dx * dx + dy * dy;
     var d = Math.sqrt(d2);
-    
     force.mod = - (g * (body1.mass * body2.mass / (d*d*d))*(d));
   
     // calcular componentes x, y de la fuerza
@@ -95,7 +140,8 @@ MODES = {
             body = bodies[i];
             if (body.proc) {
 
-              var fx = fy = 0;
+              var fx = fy = f = 0;
+
               for (var b = 0; b < bodies.length; b++) {
                 if (i !== b) {
                   calculateGForce(body, bodies[b], F, G);
@@ -103,7 +149,6 @@ MODES = {
                   fy += F.y;
                 }
               }
-            
               body.fx = fx;
               body.fy = fy;
               body.vx += fx / body.mass * dt;
@@ -149,25 +194,8 @@ MODES = {
     requestAnimationFrame(frame);
   }
   
-  function resizeCanvas(ctx, orbit_ctx) {
-    WIDTH = canvas.clientWidth;
-    HEIGHT = canvas.clientHeight;
+ 
 
-    canvas.width = WIDTH;
-    canvas.height = HEIGHT;
-
-    if (requestCenter) {
-     DESP_X = WIDTH / 2;
-     DESP_Y = HEIGHT / 2;
-     center();
-     requestCenter = false;
-    }
-    if (requestResizeBackCanvas) {
-      orbits_canvas.width = WIDTH;
-      orbits_canvas.height = HEIGHT;
-      requestResizeBackCanvas = false;
-    }
-  }
   gbl.createStar = function() {
     mode = MODES.STAR;
     newstar = {
@@ -246,7 +274,7 @@ MODES = {
     SCALE = 1 / (1000 * v);
     if (selected) {
       DESP_X += WIDTH / 2 - toCanvasCoordX(selected);
-      DESP_Y +=  HEIGHT /2- toCanvasCoordY(selected);
+      DESP_Y += HEIGHT / 2 - toCanvasCoordY(selected);
     }
   }
 
@@ -269,230 +297,7 @@ MODES = {
   }
   //
   
-  function renderSelectStar(body, context) {
-    context.beginPath();
-    context.fillStyle = body.color;
-   context.arc((body.tx) ,  (body.ty) , (1/SCALE >= RADIUS_SCALE_THRESHOLD) ? 8 : 
-               Number(document.querySelector('#field-radius').value) * SCALE * 1000, 0, 2 * Math.PI);
-    context.fill();
-  }
-  function renderSelectBody(body, context) {
-    context.beginPath();
-    context.fillStyle = body.color;
-    context.arc((body.tx) ,  (body.ty) , (1/SCALE >= RADIUS_SCALE_THRESHOLD) ? 8 : 
-               Number(document.querySelector('#field-radius').value) * SCALE * 1000, 0, 2 * Math.PI);
-    
-    context.fill();
-  }
-  function renderBodyVelocityVector(body, context) {
-   context.moveTo(body.tx , body.ty );
-   context.lineTo(body.tvx, body.tvy);
-    context.stroke();
-  }
-  
-  function renderBody(body, ctx, render_radius) {
 
-    ctx.beginPath();
-    ctx.fillStyle = body.color;
-    ctx.arc((body.x * SCALE) + DESP_X,  (body.y * SCALE) + DESP_Y, render_radius ? body.radius/2 : (((1/SCALE >= RADIUS_SCALE_THRESHOLD)) ? 8 : ((body.radius/2) * SCALE)|0), 0, 2 * Math.PI);
-    ctx.fill();
-  }
-
-  function renderInfo(body, context) {
-    //context.fillText((body.t / time_scale).toFixed(2), toCanvasCoordX(body)- 15, toCanvasCoordY(body) - 15);
-    if (selected) {
-      var is_ua_x = document.querySelector("input[name='scale-pos']:checked").value === 'ua';
-      var is_ua_y = document.querySelector("input[name='scale-pos']:checked").value === 'ua';
-
-     // document.querySelector('#field-radius').value = selected.radius * 2;
-      document.querySelector('#body-info-mass').innerHTML = selected.mass.toExponential();
-      //document.querySelector('#field-proc').checked = selected.proc;
-      //document.querySelector('#field-coor').value = selected.color;
-
-      document.querySelector('#field-posx').value = (selected.x / (is_ua_x ?  UA : 1000)).toFixed(4);
-      document.querySelector('#field-posy').value  = (selected.y / (is_ua_y ? UA : 1000)).toFixed(4);
-      document.querySelector('#field-vx').value = (selected.vx / 1000).toFixed(2);
-      document.querySelector('#field-vy').value = (selected.vy / 1000).toFixed(2);
-    }
-  }
-
-  function renderTime(t) {
-    document.querySelector("#info-years").innerHTML = numberFormatter('000', (totalTime / (86400 * 365))|0);
-    document.querySelector("#info-days").innerHTML = numberFormatter('000', (totalTime / 86400 % 365) | 0);
-    document.querySelector("#info-hours").innerHTML = numberFormatter('00', ((totalTime / 3600) % 24) | 0);
-    document.querySelector("#info-minutes").innerHTML = numberFormatter('00', (totalTime / 60 % 60) | 0);
-    document.querySelector("#info-seconds").innerHTML = numberFormatter('00', (totalTime % 60)|0);
-  }
-  
-  function renderDistance(body, bodies, context) {
-    for (var i = 0; i < bodies.length; i++) {
-      var tx = (bodies[i].x) * SCALE + DESP_X;
-      var ty = (bodies[i].y)* SCALE + DESP_Y;
-      context.strokeStyle = 'black';
-      context.beginPath();
-      context.moveTo(body.tx, body.ty);
-      context.lineTo(tx,ty);
-      context.stroke();
-      context.fillStyle = 'black';
-      context.globalCompositeOperation = 'xor';
-      context.fillText(distanceString(body, tx, ty), toCanvasCoordX(bodies[i]) + 15, toCanvasCoordY(bodies[i]) - 15);
-    }
-  }
-
-
-  function renderOrbitOnPosition(body, pBodies, context) {
-
-    if (pBodies.length >= 1) {
-      var bx,by, nx, ny;
-      var dt = 667;
-      var g = G / 1000;
-      var renderv = true;
-      
-      cBody.mass = body.mass;
-      cBody.x = toUniverseCoordX(body);
-      cBody.y = toUniverseCoordY(body);
-      cBody.vx = (body.tvx - body.tx) * V_SCALE;
-      cBody.vy = (body.tvy - body.ty) * V_SCALE;  
-      cBody.radius = 1; 
-      cBody.color = 'gray';
-      cBody.tx = body.tx;
-      cBody.ty = body.ty;
-
-      var fx = 0;
-      var fy = 0;
-
-      for (var b = 0; b < pBodies.length; b++) {
-        if (body !== pBodies[b]) {
-          calculateGForce(cBody, pBodies[b], F, g);
-          fx += F.x;
-          fy += F.y;
-        }
-      }
-      cBody.fx = fx;
-      cBody.fy = fy;
-      renderVectors(cBody, context);
-      // verlet velocity integration method
-
-      fx = 0;
-      fy = 0;
-      context.beginPath();
-      context.moveTo(cBody.tx, cBody.ty);
-      context.strokeStyle = cBody.color;
-
-      for (var i = 0; i < 20000; i++) {
-
-        for (var b = 0; b < pBodies.length; b++) {
-          if (body !== pBodies[b]) {
-            calculateGForce(cBody, pBodies[b], F, g);
-            fx += F.x;
-            fy += F.y;
-          }
-        }
-      
-        var ax = fx / cBody.mass * dt;
-        var ay = fy / cBody.mass * dt;
-        
-        cBody.x = cBody.x + cBody.vx * dt + ax*dt/2;
-        cBody.y = cBody.y + cBody.vy * dt + ay*dt/2;
-
-        var prev_ax = ax;
-        var prev_ay = ay;
-        fx = fy = 0;
-
-        for (var b = 0; b < pBodies.length; b++) {
-          if (body !== pBodies[b]) {
-            calculateGForce(cBody, pBodies[b], F, g);
-            fx += F.x;
-            fy += F.y;
-          }
-        }
-        ax = fx / cBody.mass * dt;
-        ay = fy / cBody.mass * dt;
-
-        cBody.vx = cBody.vx + (prev_ax + ax)/2 * dt
-        cBody.vy = cBody.vy + (prev_ay + ay)/2 * dt
-
-        context.lineTo(toCanvasCoordX(cBody), toCanvasCoordY(cBody));
-      } 
-      context.stroke();
-      context.closePath();
-    }
-  }
-
-  function renderVectors(body, context) {
-    context.beginPath();
-    context.strokeStyle='green';
-    context.moveTo(toCanvasCoordX(body), toCanvasCoordY(body));
-    context.lineTo(toCanvasCoordX(body)+body.vx/V_SCALE, toCanvasCoordY(body)+body.vy/V_SCALE);
-    context.stroke();
-    context.closePath();
-    context.beginPath();
-    context.strokeStyle='red';
-    context.moveTo(toCanvasCoordX(body), toCanvasCoordY(body));
-    context.lineTo(toCanvasCoordX(body)+body.fx/1e19, toCanvasCoordY(body)+body.fy/1e19);
-    context.stroke();
-    context.closePath();
-  }
-
-  function renderOrbit(body, pBodies, orbits_canvas, orbit_context, context) {
-   var nx = toCanvasCoordX(body);
-   var ny = toCanvasCoordY(body);
-   orbit_context.fillStyle=body.color;
-   orbit_context.fillRect(nx, ny, 2, 2);  
-   context.drawImage(orbits_canvas, 0, 0);
-
-   /*
-   var da = 0.01;
-   var ang = da;
-   var steps = Math.PI * 2 / da;
-
-   context.beginPath();
-
-   var r = body.sm * (1 - body.e*body.e) / (1 + (body.e));
-   cBody.x = body.sm;
-   cBody.y=0;
-
-   context.moveTo(toCanvasCoordX(cBody), toCanvasCoordY(cBody));
-
-   for (var i = 0; i < steps; i++, ang+=da) {
-
-    r = (body.sm * (1 - body.e*body.e)) / (1 + (body.e * Math.cos(ang)));
-    
-    cBody.x = r * Math.cos(ang)
-    cBody.y= r * Math.sin(ang);
-
-    /ontext.lineTo(toCanvasCoordX(cBody), toCanvasCoordY(cBody));
-
-   }
-   context.stroke();
-   context.strokeStyle = 'red';
-   renderOrbitOnPosition(body, pBodies, context);
-   context.strokeStyle = 'black';
-   */
-  }
-
-  function toCanvasCoordX(body) {
-    return ((body.x * SCALE)|0) +DESP_X;
-    
-  }
-  
-  function toCanvasCoordY(body) {
-    
-    return ((body.y * SCALE)|0) +DESP_Y;
-    
-  }
-
-  function toUniverseCoordX(body) {
-    return (body.tx-DESP_X) / SCALE;
-    
-  }
-  
-  function toUniverseCoordY(body) {
-    
-    return (body.ty-DESP_Y) / SCALE;
-    
-  }
-  
   function distanceString(body, tx, ty) {
     
     var distance = calculateDistance(body, tx, ty);
@@ -555,11 +360,7 @@ MODES = {
     }
   }
   
-  function showProperties() {
-    document.querySelector('#field-scale').value = (1 / (SCALE*1000)).toFixed(0);
-  document.querySelector('#field-vscale').value = (V_SCALE);
-  document.querySelector('#field-grid').value = (GRID_SIZE);
-  }
+
   
   function renderMousePos(x, y) {
     document.querySelector('#mx').innerHTML = x - DESP_X;
@@ -633,16 +434,7 @@ gbl. play_stop = function() {
     return null;
   }
 
-  function renderSelected(context) {
-    if (selected) {
-      var x = toCanvasCoordX(selected);
-      var y = toCanvasCoordY(selected);
-      context.beginPath();
-      context.strokeStyle = 'gray';
-      context.arc(x, y, (1/SCALE >= RADIUS_SCALE_THRESHOLD) ? 15 : 15 + ((selected.radius/2 * SCALE)|0), 0, 2 * Math.PI);
-      context.stroke();
-    }
-  }
+ 
 
   gbl. updateBody = function() {
     if (selected) {
@@ -655,7 +447,7 @@ gbl. play_stop = function() {
 
   //
 
-
+  
   canvas = document.getElementById('c');
   orbits_canvas = document.getElementById('backcanvas');
   context = canvas.getContext('2d');
@@ -767,11 +559,9 @@ gbl. play_stop = function() {
         break;
     }
   }
-eraseAll();
-t1 = 0;
-totalTime = 0;
+*/
 
-document.querySelector('#field-g').value = G;
-document.querySelector('#field-tscale').value = time_scale;
+
+
+init();
 requestAnimationFrame(frame);
-  
