@@ -20,11 +20,6 @@ const MODES = {
   MOVE: 5
 };
 
-const BODY_TYPES = {
-  STAR: 1,
-  PLANET: 2
-}
-
 let velocityScale = null;
 let scale = null;
 let requestResizeCheck = null;
@@ -45,7 +40,7 @@ let currentBody = null;
 function init() {
   controls.init(document);
   renderer.init(controls.getCanvas(), controls.getBackCanvas());
-  gravityLab.init(glb);
+  gravityLab.init();
   reset();
   registerEvents();
 }
@@ -55,11 +50,14 @@ function resetMode() {
 }
 
 function setDefaults() {
+  //gravityLab.configure(Constants.DEFAULT_TIME_SCALE, );
   time_scale = Constants.DEFAULT_TIME_SCALE;
   controls.setTimeScale(time_scale);
   controls.setGridSize(Constants.DEFAULT_GRID_SIZE);
   controls.setVelocityScale(Constants.DEFAULT_VELOCITY_SCALE);
   controls.setScale(Constants.DEFAULT_SCALE);
+
+
 }
 
 function requestResize() {
@@ -122,6 +120,8 @@ function onMouseMove(e) {
         my = py;
         break;
       case MODES.STAR:
+        newbody.tx = px;
+        newbody.ty = py;
         break;
       case MODES.BODY_POINTING:
         
@@ -152,22 +152,11 @@ function onMouseUp(e) {
       mode = MODES.POINTER;
       break;
     case MODES.STAR:
-    /*
-      bodies.push(
-        {
-          type : BODY_TYPES.STAR,
-          vx: 0,
-          vy: 0,
-          color: newstar.color,
-          proc: document.querySelector('#field-proc').checked,
-          radius: Number(document.querySelector('#field-radius').value) * 1000,
-          x: (px - DESP_X) / SCALE,
-          y: (py - DESP_Y) / SCALE,
-          mass: Number(document.querySelector('#field-mass').value)
-        }
-      );
+      gravityLab.addBody(newbody);
+      newbody = null;
       mode = MODES.POINTER;
       break;
+      /*
     case MODES.BODY_VELOCITY:
       bodies.push(
         {
@@ -214,58 +203,6 @@ window.createStar = function() {
   newbody = gravityLab.createStar();
 }
 
-/*
-  var orbits_canvas;
-  var orbits_context;
-  var canvas = null;
-  var context = null;
-  var playing = true;
-  var totalTime = 0;
-  var selected = null;
-
-  var WIDTH = 0;
-  var HEIGHT = 0;
-  
-  var t1 = 0;
-  var mode = MODES.pointer;
-  var DESP_X = 0;
-  var DESP_Y = 0;
-  var mx = 0;
-  var my = 0;
-  var orbits_buffer;
-  
-  var newbody = null;
-  var newstar = null;
-  
-  var cBody= {};
-  var cBody2= {};
-  var cBody3= {};
-
-
-  var d0 = d1 = d2 = d3 = d4 = {x:0, y: 0, vx: 0, vy: 0};
-
-  var F = {};
-
-  var requestCenter = true;
-  var requestResizeBackCanvas = true;
-  
-  function calculateGForce(body1, body2, force, g) {
-    var dx = body2.x - body1.x;
-    var dy = body2.y - body1.y;
-    if (dx === 0 && dy === 0) {
-      return { x:0, y:0, mod: 0 };
-    } 
-    var d2 = dx * dx + dy * dy;
-    var d = Math.sqrt(d2);
-    force.mod = - (g * (body1.mass * body2.mass / (d*d*d))*(d));
-  
-    // calcular componentes x, y de la fuerza
-    force.x = force.mod * (dx / d);
-    force.y = force.mod * (dy / d);
-  
-    return force;
-  }
-  */
   
   function frame(t) {  
 
@@ -289,50 +226,26 @@ window.createStar = function() {
     
     renderer.renderGrid(controls.getGridSize());
 
+    renderState();
+
     if (playing) {
       controls.showTime(totalTime);
+      //gravityÑab.updateState(totalTime);
     } 
 
-   
+
+    if (mode === MODES.STAR) {
+      renderer.renderBodyOn(newbody, newbody.tx, newbody.ty);
+    } else if (mode === MODES.BODY_POINTING) {
+        //renderSelectBody(newbody, context);
+        //renderDistance(newbody, bodies, context);
+    } else if (mode === MODES.BODY_VELOCITY) {
+        //renderSelectBody(newbody, context);
+        //renderBodyVelocityVector(newbody, context);
+        //renderOrbitOnPosition(newbody, bodies,  context);
+    }
 
     /*
-    if (playing) {  
-      totalTime += timestep;
-    } 
-    if (bodies.length > 0) {
-      var body;
-      var dt = 100;
-      var limit = (timestep / dt) | 0;
-      if (playing) {
-        for (var l = 0; l < limit; l++) {
-          for (var i = 0; i < bodies.length; i++) {
-            body = bodies[i];
-            if (body.proc) {
-
-              var fx = fy = f = 0;
-
-              for (var b = 0; b < bodies.length; b++) {
-                if (i !== b) {
-                  calculateGForce(body, bodies[b], F, G);
-                  fx += F.x;
-                  fy += F.y;
-                }
-              }
-              body.fx = fx;
-              body.fy = fy;
-              body.vx += fx / body.mass * dt;
-              body.vy += fy / body.mass * dt;
-            }
-          }
-          for (var b = 0; b < bodies.length; b++) {
-            body = bodies[b];
-            if (body.proc) {
-              body.x += body.vx * dt;
-              body.y += body.vy * dt;
-            }
-          }
-        }
-      }
 
       for (var b = 0; b < bodies.length; b++) {
         body = bodies[b];
@@ -364,42 +277,21 @@ window.createStar = function() {
     requestAnimationFrame(frame);
   }
   
+  function renderState() {
+    let bodies = gravityLab.getBodies();
+    for (var b = 0; b < bodies.length; b++) {
+      let body = bodies[b];
+      if (body.gravity) {
+        //renderOrbit(body, bodies, orbits_canvas, orbits_context, context);
+        //renderVectors(body, context);
+      }
+      renderer.renderBody(body);
+      renderer.renderInfo(body);
+      
+    }
+  }
  
 /*
-  gbl.createStar = function() {
-    mode = MODES.STAR;
-    newstar = {
-      proc: false,
-      vx: 0,
-      vy: 0,
-      radius: 695700,
-      x: 0,
-      y: 0,
-      mass: 1.98e30,
-      tx: 0,
-      ty: 0,
-      type: BODY_TYPES.STAR,
-      color: '#ffff00'
-    };
-    
-    var massInput = document.querySelector('#field-mass');
-    document.querySelector('#field-proc').checked = false;
-    massInput.disabled = false;
-    massInput.value = newstar.mass;
-    massInput.focus();
-  }
-  
-  
-  gbl.eraseAll = function() {
-    bodies =   [];
-    mode = MODES.POINTER;
-    GRID_SIZE = 100;
-    V_SCALE = 1000;
-    SCALE = 1 / (1e9);
-    requestCenter = true;
-    showProperties();
-  }
-
 
   gbl. createBody = function() {
      mode = MODES.BODY_POINTING;

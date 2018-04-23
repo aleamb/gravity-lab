@@ -106,19 +106,19 @@ Renderer.prototype.move = function(dx, dy) {
 
 }
 
+Renderer.prototype.renderBodyOn = function(body, x, y) {
+  this.context.beginPath();
+  this.context.fillStyle = body.color;
+  this.context.arc(x - this.canvas.offsetLeft, y - this.canvas.offsetTop, 
+             //(1 / SCALE >= RADIUS_SCALE_THRESHOLD) ? 8 : body.radius * SCALE * 1000,
+             8, 0, 2 * Math.PI);
+  this.context.fill();
+}
+
 module.exports = new Renderer();
 
 
 /*
-
-
-  function renderSelectStar(body, context) {
-    context.beginPath();
-    context.fillStyle = body.color;
-   context.arc((body.tx) ,  (body.ty) , (1/SCALE >= RADIUS_SCALE_THRESHOLD) ? 8 : 
-               Number(document.querySelector('#field-radius').value) * SCALE * 1000, 0, 2 * Math.PI);
-    context.fill();
-  }
   function renderSelectBody(body, context) {
     context.beginPath();
     context.fillStyle = body.color;
