@@ -8,6 +8,7 @@
 const Constants = require('./constants');
 const gravityLab = require('./gravityLab');
 const controls = require('./controls');
+const renderer = require('./renderer');
 
 const glb = typeof window !== 'undefined' ? window : global;
 
@@ -24,16 +25,29 @@ const BODY_TYPES = {
   PLANET: 2
 }
 
-var gridSize = null;
-var velocityScale = null;
-var scale = null;
-var requestCenter = null;
+let velocityScale = null;
+let scale = null;
+let requestResizeCheck = null;
+let requestCenterCheck = null;
+let canvas = null;
+let context = null;
+let orbits_canvas = null;
+let orbits_context = null;
+let t1 = 0;
+let totalTime = 0;
+let time_scale = 0;
+let playing = true;
+let mode = 0;
+let mx, my = 0;
+let newbody = null;
+let currentBody = null;
 
 function init() {
-
+  controls.init(document);
+  renderer.init(controls.getCanvas(), controls.getBackCanvas());
   gravityLab.init(glb);
-  controls.init();
   reset();
+  registerEvents();
 }
 
 function resetMode() {
@@ -41,31 +55,163 @@ function resetMode() {
 }
 
 function setDefaults() {
-  gridSize = Constants.DEFAULT_GRID_SIZE;
-  velocityScale = Constants.DEFAULT_VELOCITY_SCALE;
-  scale = Constants.DEFAULT_SCALE;
+  time_scale = Constants.DEFAULT_TIME_SCALE;
+  controls.setTimeScale(time_scale);
+  controls.setGridSize(Constants.DEFAULT_GRID_SIZE);
+  controls.setVelocityScale(Constants.DEFAULT_VELOCITY_SCALE);
+  controls.setScale(Constants.DEFAULT_SCALE);
 }
 
-function requestGridCenter() {
-  requestCenter = true;
+function requestResize() {
+  requestResizeCheck = true;
+}
+
+function cancelResizeRequest() {
+  requestResizeCheck = false;
+}
+
+function isResizeRequested() {
+  return requestResizeCheck;
+}
+
+function isCenterRequested() {
+  return requestCenterCheck;
+}
+
+function requestCenter() {
+  requestCenterCheck = true;
+}
+
+function cancelCenterRequest() {
+  requestCenterCheck = false;
 }
 
 function reset() {
   gravityLab.reset();
   resetMode();
   setDefaults();
-  requestGridCenter();
-  showProperties();
+  requestResize();
+  requestCenter();
 }
 
+function registerEvents() {
+  registerMouseEvents();
+}
 
-function showProperties() {
-  controls.setScale(scale);
-  controls.setScale(scale);
+function registerMouseEvents() {
+  var canvas = controls.getCanvas();
 
-  document.querySelector('#field-scale').value = (1 / (SCALE*1000)).toFixed(0);
-  document.querySelector('#field-vscale').value = (V_SCALE);
-  document.querySelector('#field-grid').value = (GRID_SIZE);
+  canvas.onmousemove = onMouseMove;
+  canvas.onmouseup = onMouseUp;
+  canvas.onmousedown = onMouseDown;
+
+}
+
+function onMouseMove(e) {
+    var px = e.clientX;
+    var py = e.clientY;
+
+    switch (mode) {
+      case MODES.POINTER:
+        controls.mouseMove(e.clientX, e.clientY);
+      break;
+      case MODES.MOVE:
+        renderer.clear();
+        renderer.move(px - mx, py - my);
+        mx = px;
+        my = py;
+        break;
+      case MODES.STAR:
+        break;
+      case MODES.BODY_POINTING:
+        
+        break;
+      case MODES.BODY_VELOCITY:
+
+       // var vxInput = document.querySelector('#field-vx');
+       // var vyInput = document.querySelector('#field-vy');
+
+
+        //vxInput.value = (newbody.tvx - newbody.tx) * V_SCALE / 1000;
+        //vyInput.value = (newbody.tvy - newbody.ty) * V_SCALE / 1000;
+  
+        break;
+    }
+}
+
+function onMouseUp(e) {
+  var px = e.clientX;
+  var py = e.clientY;
+
+  switch (mode) {
+    case MODES.MOVE:
+      //selected = getSelected(px, py);
+      mode = MODES.POINTER;
+      break;
+    case MODES.MOVE:
+      mode = MODES.POINTER;
+      break;
+    case MODES.STAR:
+    /*
+      bodies.push(
+        {
+          type : BODY_TYPES.STAR,
+          vx: 0,
+          vy: 0,
+          color: newstar.color,
+          proc: document.querySelector('#field-proc').checked,
+          radius: Number(document.querySelector('#field-radius').value) * 1000,
+          x: (px - DESP_X) / SCALE,
+          y: (py - DESP_Y) / SCALE,
+          mass: Number(document.querySelector('#field-mass').value)
+        }
+      );
+      mode = MODES.POINTER;
+      break;
+    case MODES.BODY_VELOCITY:
+      bodies.push(
+        {
+          type : BODY_TYPES.PLANET,
+          vx: (newbody.tvx - newbody.tx) * V_SCALE,
+          vy: (newbody.tvy - newbody.ty) * V_SCALE,
+          ox: (newbody.tvx - newbody.tx) * V_SCALE,
+          oy: (newbody.tvy - newbody.ty) * V_SCALE,
+          radius: Number(document.querySelector('#field-radius').value) * 1000,
+          proc: document.querySelector('#field-proc').checked,
+          x: (newbody.tx - DESP_X) / SCALE,
+          y: (newbody.ty - DESP_Y) / SCALE,
+          color: newbody.color,
+          t: 0,
+          fx: 0,
+          fy:0,
+          mass: Number(document.querySelector('#field-mass').value)
+        }
+      );
+      mode = MODES.POINTER;
+      break;
+    case MODES.BODY_POINTING:
+      newbody.tx = px;
+      newbody.ty = py;
+      newbody.tvx = newbody.tx;
+      newbody.tvy = newbody.ty;
+      mode = MODES.BODY_VELOCITY;
+      */
+    }
+}
+
+function onMouseDown(e) {
+  switch (mode) {
+    case MODES.POINTER:
+      mx = e.clientX;
+      my = e.clientY;
+      mode = MODES.MOVE;
+      break;
+  }
+} 
+
+window.createStar = function() {
+  mode = MODES.STAR;
+  newbody = gravityLab.createStar();
 }
 
 /*
@@ -119,14 +265,37 @@ function showProperties() {
   
     return force;
   }
+  */
   
   function frame(t) {  
 
-    resizeCanvas(context, orbits_context);
-
     var delta = t - t1;
-    var timestep = (delta * time_scale / 1000);
+    t1 = t;
+    totalTime += (delta / 1000);
 
+    renderer.clear();
+
+    if (isResizeRequested()) {
+      renderer.resizeCanvas(context, orbits_context);
+      cancelResizeRequest();
+      controls.setOffsets();
+    }
+
+    if (isCenterRequested()) {
+      renderer.center();
+      cancelCenterRequest();
+      controls.setOffsets(renderer.getXOffset(), renderer.getYOffset());
+    }
+    
+    renderer.renderGrid(controls.getGridSize());
+
+    if (playing) {
+      controls.showTime(totalTime);
+    } 
+
+   
+
+    /*
     if (playing) {  
       totalTime += timestep;
     } 
@@ -191,11 +360,12 @@ function showProperties() {
     renderSelected(context);
     renderTime();
     t1 = t;
+    */
     requestAnimationFrame(frame);
   }
   
  
-
+/*
   gbl.createStar = function() {
     mode = MODES.STAR;
     newstar = {

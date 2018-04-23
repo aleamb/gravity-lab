@@ -22,6 +22,8 @@ gulp.task('browser-sync', () => {
       index: 'index.html',
     },
   });
+  gulp.watch("*.js").on('change', function() { gulp.start('browserify'); browserSync.reload(); });
+
 });
 
 gulp.task('watch', ['browserify', 'browser-sync'], () => {});

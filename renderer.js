@@ -1,22 +1,116 @@
-function resizeCanvas(ctx, orbit_ctx) {
-    WIDTH = canvas.clientWidth;
-    HEIGHT = canvas.clientHeight;
+/**
+ * @file renderer.js
+ * 
+ * Render functions.
+ * 
+ * @author Alejandro Ambroa <jandroz@gmail.com>
+ * @version 1.0.0
+ */
 
-    canvas.width = WIDTH;
-    canvas.height = HEIGHT;
+const Constants = require('./constants');
 
-    if (requestCenter) {
-     DESP_X = WIDTH / 2;
-     DESP_Y = HEIGHT / 2;
-     center();
-     requestCenter = false;
-    }
-    if (requestResizeBackCanvas) {
-      orbits_canvas.width = WIDTH;
-      orbits_canvas.height = HEIGHT;
-      requestResizeBackCanvas = false;
-    }
+const GRID_STYLE = 'rgba(100,100,100, 0.5)';
+const CENTER_STYLE = 'rgba(100,100,100, 0.8)';
+
+let Renderer = function() {
+  this.canvas = null;
+  this.back_canvas = null;
+  this.context = null;
+  this.orbits_context = null;
+  this.width = 0;
+  this.height = 0;
+  this.offset_x = 0;
+  this.offset_y = 0;
+}
+
+Renderer.prototype.init = function(pCanvas, pBackCanvas) {
+  this.canvas = pCanvas;
+  this.back_canvas = pBackCanvas;
+  this.context = pCanvas.getContext('2d');
+  this.orbits_context = pBackCanvas.getContext('2d');
+}
+
+Renderer.prototype.resizeCanvas = function() {
+  this.width = this.canvas.clientWidth;
+  this.height = this.canvas.clientHeight;
+
+  this.canvas.width = this.width;
+  this.canvas.height = this.height;
+
+  this.back_canvas.width = this.width;
+  this.back_canvas.height =  this.height;
+}
+
+Renderer.prototype.center = function() {
+  this.offset_x = this.width / 2;
+  this.offset_y = this.height / 2;
+}
+
+Renderer.prototype.getXOffset = function() {
+  return this.offset_x;
+}
+
+Renderer.prototype.getYOffset = function() {
+  return this.offset_y;
+}
+
+
+Renderer.prototype.clear = function() {
+  this.canvas.width |= 0;
+}
+
+
+Renderer.prototype.renderGrid = function(pGridSize) {
+
+  let g  = isNaN(pGridSize) ? Constants.DEFAULT_GRID_SIZE : pGridSize;
+  let g2 = g / 2;
+
+  this.context.strokeStyle = GRID_STYLE;
+
+  for (var i = (this.offset_x % g) - g2 ; i < this.width; i += g) {
+    
+    this.context.beginPath();
+    this.context.moveTo(i + g2, 0);
+    this.context.lineTo(i + g2, this.height);
+    this.context.stroke();    
   }
+
+  for (var i = this.offset_y % g - g2; i < this.height; i += g) {
+    this.context.beginPath();
+    this.context.moveTo(0, i + g2);
+    this.context.lineTo(this.width, i + g2);
+    this.context.stroke();
+
+  }
+  if (this.offset_x >= 0 && this.offset_x <= this.width) {
+
+    this.context.strokeStyle = CENTER_STYLE;
+
+    this.context.beginPath();
+    this.context.moveTo(this.offset_x, 0);
+    this.context.lineTo(this.offset_x, this.height);
+    this.context.stroke();
+  }
+  if (this.offset_y >= 0 && this.offset_y <= this.height) {
+    this.context.beginPath();
+    this.context.moveTo(0, this.offset_y);
+    this.context.lineTo(this.width, this.offset_y);
+    this.context.stroke();
+  }
+
+}
+
+Renderer.prototype.move = function(dx, dy) {
+  this.offset_x += dx;
+  this.offset_y += dy;
+
+}
+
+module.exports = new Renderer();
+
+
+/*
+
 
   function renderSelectStar(body, context) {
     context.beginPath();
@@ -193,7 +287,7 @@ function resizeCanvas(ctx, orbit_ctx) {
    orbit_context.fillRect(nx, ny, 2, 2);  
    context.drawImage(orbits_canvas, 0, 0);
 
-   /*
+   
    var da = 0.01;
    var ang = da;
    var steps = Math.PI * 2 / da;
@@ -213,14 +307,13 @@ function resizeCanvas(ctx, orbit_ctx) {
     cBody.x = r * Math.cos(ang)
     cBody.y= r * Math.sin(ang);
 
-    /ontext.lineTo(toCanvasCoordX(cBody), toCanvasCoordY(cBody));
+    context.lineTo(toCanvasCoordX(cBody), toCanvasCoordY(cBody));
 
    }
    context.stroke();
    context.strokeStyle = 'red';
    renderOrbitOnPosition(body, pBodies, context);
    context.strokeStyle = 'black';
-   */
   }
 
   function toCanvasCoordX(body) {
@@ -255,4 +348,4 @@ function resizeCanvas(ctx, orbit_ctx) {
       context.stroke();
     }
   }
-  
+*/
