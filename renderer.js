@@ -119,7 +119,6 @@ Renderer.prototype.renderBodyOn = function(body, x, y) {
 Renderer.prototype.renderBody = function(body) {
   this.context.beginPath();
   this.context.fillStyle = body.color;
-  console.log((body.y * this.scale + this.offset_y) );
   this.context.arc((body.x * this.scale) + this.offset_x,  (body.y * this.scale) + this.offset_y, 8 , 0, 2 * Math.PI);
   this.context.fill();
 }
