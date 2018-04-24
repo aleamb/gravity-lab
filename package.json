@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/aleamb/gravity-lab#readme",
   "devDependencies": {
-    "browser-sync": "^2.23.6",
+    "browser-sync": "^2.23.7",
     "gulp": "^3.9.1",
     "gulp-browserify": "^0.5.1"
   },

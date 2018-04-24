@@ -50,12 +50,13 @@ function resetMode() {
 }
 
 function setDefaults() {
-  //gravityLab.configure(Constants.DEFAULT_TIME_SCALE, );
   time_scale = Constants.DEFAULT_TIME_SCALE;
   controls.setTimeScale(time_scale);
   controls.setGridSize(Constants.DEFAULT_GRID_SIZE);
   controls.setVelocityScale(Constants.DEFAULT_VELOCITY_SCALE);
   controls.setScale(Constants.DEFAULT_SCALE);
+  gravityLab.setScale(Constants.DEFAULT_SCALE);
+  renderer.setScale(Constants.DEFAULT_SCALE);
 
 
 }
@@ -108,10 +109,10 @@ function registerMouseEvents() {
 function onMouseMove(e) {
     var px = e.clientX;
     var py = e.clientY;
-
+    
+    controls.mouseMove(e.clientX, e.clientY);
     switch (mode) {
       case MODES.POINTER:
-        controls.mouseMove(e.clientX, e.clientY);
       break;
       case MODES.MOVE:
         renderer.clear();
@@ -152,7 +153,7 @@ function onMouseUp(e) {
       mode = MODES.POINTER;
       break;
     case MODES.STAR:
-      gravityLab.addBody(newbody);
+      gravityLab.addBody(newbody, renderer.clientToXViewport(px), renderer.clientToYViewport(py));
       newbody = null;
       mode = MODES.POINTER;
       break;
@@ -230,7 +231,7 @@ window.createStar = function() {
 
     if (playing) {
       controls.showTime(totalTime);
-      //gravityÑab.updateState(totalTime);
+      gravityLab.updateState(totalTime);
     } 
 
 
@@ -286,8 +287,6 @@ window.createStar = function() {
         //renderVectors(body, context);
       }
       renderer.renderBody(body);
-      renderer.renderInfo(body);
-      
     }
   }
  

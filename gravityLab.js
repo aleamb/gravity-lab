@@ -14,6 +14,7 @@ let GravityLab = function() {
     this.t1 = null;
     this.totalTime = null;
     this.newbody = null;
+    this.scale = null;
 }
 
 GravityLab.prototype.init = function() {
@@ -23,6 +24,9 @@ GravityLab.prototype.reset = function() {
     this.bodies = [];
     this.t1 = 0;
     this.totalTime = 0;
+}
+GravityLab.prototype.setScale = function(pScale) {
+  this.scale = pScale;
 }
 GravityLab.prototype.createStar = function() {
 
@@ -34,12 +38,18 @@ GravityLab.prototype.createStar = function() {
     return this.newbody;
 }
 
-GravityLab.prototype.addBody = function(body) {
+GravityLab.prototype.addBody = function(body, xPos, yPos) {
+    body.x = xPos / this.scale;
+    body.y = yPos / this.scale;
     this.bodies.push(body);
 }
 
 GravityLab.prototype.getBodies = function() {
     return this.bodies;
+}
+
+GravityLab.prototype.updateState = function(t) {
+
 }
 
 module.exports = new GravityLab();
