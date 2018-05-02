@@ -173,9 +173,9 @@ Renderer.prototype.distanceString = function(cx, cy, tx, ty) {
   var distance = this.calculateDistance(cx, cy, tx, ty);
 
   if (distance > UA) {
-    return ((distance / UA).toFixed(3)) + ' UA';
+    return ((distance / UA).toLocaleString()) + ' UA';
   } else {
-    return (distance / 1000).toFixed(3) + ' Km.';
+    return (distance / 1000).toLocaleString() + ' Km.';
   }
 }
 

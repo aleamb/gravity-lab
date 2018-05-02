@@ -4,7 +4,7 @@
  * @author Alejandro Ambroa <jandroz@gmail.com>
  * @version 1.0.0
  */
-var numberFormatter = require('number-formatter');
+let numberFormatter = require('number-formatter');
 
 let Controls = function() {
     this.container = null;
