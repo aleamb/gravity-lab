@@ -54,7 +54,7 @@ Controls.prototype.setVelocityScale = function(pValue) {
 }
 
 Controls.prototype.setScale = function(pValue) {
-    this.scaleField.value = Number(pValue);
+    this.scaleField.value = Number(1 / pValue / 1000).toFixed(1);
     this.scale = Number(pValue);
 }
 
