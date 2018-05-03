@@ -15,8 +15,10 @@ let GravityLab = function () {
   this.totalTime = null;
   this.newbody = null;
   this.scale = null;
+  this.velocityScale = null;
   this.cBody = {};
   this.F = {};
+  this.time_scale = null;
 }
 
 GravityLab.prototype.init = function () {
@@ -30,9 +32,13 @@ GravityLab.prototype.reset = function () {
 GravityLab.prototype.setScale = function (pScale) {
   this.scale = pScale;
 }
+GravityLab.prototype.setTimeScale = function (value) {
+  this.time_scale = value;
+}
 GravityLab.prototype.createStar = function () {
 
   this.newbody = new Body();
+  this.newbody.gravity = false;
   this.newbody.radius = Constants.STAR_DEFAULT_RADIUS;
   this.newbody.mass = Constants.STAR_DEFAULT_MASS;
   this.newbody.type = Body.BODY_TYPES.STAR;
@@ -59,19 +65,55 @@ GravityLab.prototype.addBody = function (body, xPos, yPos) {
 GravityLab.prototype.getBodies = function () {
   return this.bodies;
 }
-
+/**
+ * Calculate position of all bodies for step time using Euler's integration
+ * @param {*} t 
+ */
 GravityLab.prototype.updateState = function (t) {
+
+  let body;
+  let dt = 100;
+  let timestep = t * this.time_scale;
+  let limit = (timestep / dt) | 0;
+  let bodies = this.bodies;
+  let F = this.F;
+  let G = Constants.G;
+
+  for (let l = 0; l < limit; l++) {
+    for (let i = 0; i < bodies.length; i++) {
+      body = bodies[i];
+      if (body.gravity) {
+        let fx = fy = 0;
+        for (let b = 0; b < bodies.length; b++) {
+          if (i !== b) {
+            this.calculateForce(body, bodies[b], F, G);
+            fx += F.x;
+            fy += F.y;
+          }
+        }
+        body.vx += fx / body.mass * dt;
+        body.vy += fy / body.mass * dt;
+      }
+    }
+    for (let b = 0; b < bodies.length; b++) {
+      body = bodies[b];
+      if (body.gravity) {
+        body.x += body.vx * dt;
+        body.y += body.vy * dt;
+      }
+    }
+  }
 
 }
 
-GravityLab.prototype.calculateForce = function(body1, body2, force, g) {
+GravityLab.prototype.calculateForce = function (body1, body2, force, g) {
 
-  var dx = body2.x - body1.x;
-  var dy = body2.y - body1.y;
-  var d2 = dx * dx + dy * dy;
-  var d = Math.sqrt(d2);
-  
-  force.mod = - (g * (body1.mass * body2.mass / (d*d*d))*(d));
+  let dx = body2.x - body1.x;
+  let dy = body2.y - body1.y;
+  let d2 = dx * dx + dy * dy;
+  let d = Math.sqrt(d2);
+
+  force.mod = - (g * (body1.mass * body2.mass / (d * d * d)) * (d));
 
   force.x = force.mod * (dx / d);
   force.y = force.mod * (dy / d);
@@ -87,56 +129,56 @@ GravityLab.prototype.calculateForce = function(body1, body2, force, g) {
 GravityLab.prototype.calculateOrbit = function (body, x, y, outOrbitPoints) {
 
   if (this.bodies.length >= 1) {
-    var bx, by, nx, ny;
-    var dt = 667;
-    var g = Constants.G / 1000;
+    let bx, by, nx, ny;
+    let dt = 667;
+    let g = Constants.G / 1000;
+    let cBody = this.cBody;
+    let F = this.F;
+    let pBodies = this.bodies;
 
     cBody.mass = body.mass;
     cBody.x = x / this.scale;
     cBody.y = y / this.scale;
-    cBody.vx = (body.tvx - body.tx) * V_SCALE;
-    cBody.vy = (body.tvy - body.ty) * V_SCALE;
-    cBody.radius = 1;
+    cBody.vx = body.vx;
+    cBody.vy = body.vy;
+    cBody.radius = 8;
     cBody.color = 'red';
-    cBody.tx = body.tx;
-    cBody.ty = body.ty;
 
-    var fx = 0;
-    var fy = 0;
+    let fx = 0;
+    let fy = 0;
 
-    // verlet velocity integration method
-
-    this.context.beginPath();
-    this.context.moveTo(cBody.tx, cBody.ty);
+    let integration_steps = 20000;
+    let register_point_threshold = (integration_steps / (outOrbitPoints.length / 2 - 1)) | 0;
 
 
+    for (let i = 0, point = 0; i < integration_steps; i++) {
 
-    for (var i = 0; i < 20000; i++) {
-
-      for (var b = 0; b < pBodies.length; b++) {
-        if (body !== pBodies[b]) {
-          calculateForce(cBody, pBodies[b], F, g);
-          fx += F.x;
-          fy += F.y;
-        }
+      if (i === 0 || i > (register_point_threshold * point)) {
+        outOrbitPoints[point] = cBody.x;
+        outOrbitPoints[point + 1] = cBody.y;
+        point += 2;
       }
 
-      var ax = fx / cBody.mass * dt;
-      var ay = fy / cBody.mass * dt;
+      for (var b = 0; b < pBodies.length; b++) {
+        this.calculateForce(cBody, pBodies[b], F, g);
+        fx += F.x;
+        fy += F.y;
+      }
+
+      let ax = fx / cBody.mass * dt;
+      let ay = fy / cBody.mass * dt;
 
       cBody.x = cBody.x + cBody.vx * dt + ax * dt / 2;
       cBody.y = cBody.y + cBody.vy * dt + ay * dt / 2;
 
-      var prev_ax = ax;
-      var prev_ay = ay;
+      let prev_ax = ax;
+      let prev_ay = ay;
       fx = fy = 0;
 
-      for (var b = 0; b < pBodies.length; b++) {
-        if (body !== pBodies[b]) {
-          calculateForce(cBody, pBodies[b], F, g);
-          fx += F.x;
-          fy += F.y;
-        }
+      for (let b = 0; b < pBodies.length; b++) {
+        this.calculateForce(cBody, pBodies[b], F, g);
+        fx += F.x;
+        fy += F.y;
       }
       ax = fx / cBody.mass * dt;
       ay = fy / cBody.mass * dt;
@@ -144,9 +186,8 @@ GravityLab.prototype.calculateOrbit = function (body, x, y, outOrbitPoints) {
       cBody.vx = cBody.vx + (prev_ax + ax) / 2 * dt
       cBody.vy = cBody.vy + (prev_ay + ay) / 2 * dt
 
-      this.context.lineTo(toCanvasCoordX(cBody), toCanvasCoordY(cBody));
     }
-    this.context.stroke();
+
   }
 }
 

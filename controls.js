@@ -63,7 +63,7 @@ Controls.prototype.getCanvas = function() {
 }
 
 Controls.prototype.getBackCanvas = function() {
-    return this.canvas;
+    return this.backCanvas;
 }
 
 Controls.prototype.getGridSize = function() {
@@ -104,6 +104,10 @@ Controls.prototype.showTime = function(t) {
 Controls.prototype.setTimeScale = function(timeScale) {
     this.timeScale = timeScale;
     this.timeScaleField.value = timeScale;
+}
+
+Controls.prototype.getTimeScale = function() {
+    return this.timeScale;
 }
 
 module.exports = new Controls();

@@ -36,7 +36,7 @@ let mode = 0;
 let mx, my = 0;
 let newbody = null;
 let currentBody = null;
-let orbit_coords = new Array(100);
+let orbit_coords = new Array(100 * 2);
 
 function init() {
   controls.init(document);
@@ -52,11 +52,12 @@ function resetMode() {
 
 function setDefaults() {
   time_scale = Constants.DEFAULT_TIME_SCALE;
-  controls.setTimeScale(time_scale);
+  controls.setTimeScale(Constants.DEFAULT_TIME_SCALE);
   controls.setGridSize(Constants.DEFAULT_GRID_SIZE);
   controls.setVelocityScale(Constants.DEFAULT_VELOCITY_SCALE);
   controls.setScale(Constants.DEFAULT_SCALE);
   gravityLab.setScale(Constants.DEFAULT_SCALE);
+  gravityLab.setTimeScale(Constants.DEFAULT_TIME_SCALE);
   renderer.setScale(Constants.DEFAULT_SCALE);
 }
 
@@ -130,8 +131,8 @@ function onMouseMove(e) {
     case MODES.BODY_VELOCITY:
       newbody.tvx = px;
       newbody.tvy = py;
-      newbody.vx = (body.tvx - body.tx) * controls.getVelocityScale();
-      newbody.vy = (body.ty - body.tvy) * controls.getVelocityScale();
+      newbody.vx = (newbody.tvx - newbody.tx) * controls.getVelocityScale();
+      newbody.vy = (newbody.ty - newbody.tvy) * controls.getVelocityScale();
       break;
   }
 }
@@ -162,8 +163,8 @@ function onMouseUp(e) {
       break;
     case MODES.BODY_VELOCITY:
       gravityLab.addBody(newbody,
-        renderer.clientToXViewport(px),
-        renderer.clientToYViewport(py));
+        renderer.clientToXViewport(newbody.tx),
+        renderer.clientToYViewport(newbody.ty));
       newbody = null;
       mode = MODES.POINTER;
   }
@@ -181,9 +182,9 @@ function onMouseDown(e) {
 
 function frame(t) {
 
-  var delta = t - t1;
+  var delta = (t - t1) / 1000;
   t1 = t;
-  totalTime += (delta / 1000);
+  totalTime += delta;
 
   renderer.clear();
 
@@ -205,7 +206,8 @@ function frame(t) {
 
   if (playing) {
     controls.showTime(totalTime);
-    gravityLab.updateState(totalTime);
+    gravityLab.updateState(delta);
+    renderer.traceOrbitsPosition(gravityLab.getBodies());
   }
 
 
@@ -219,9 +221,9 @@ function frame(t) {
     renderer.renderBodyVelocity(newbody, controls.getVelocityScale());
     gravityLab.calculateOrbit(newbody,
       renderer.clientToXViewport(newbody.tx),
-      renderer.clientToXViewport(newbody.ty),
+      renderer.clientToYViewport(newbody.ty),
       orbit_coords);
-    renderer.renderOrbitPoints(orbit_coords);
+    renderer.renderOrbitPoints(orbit_coords, controls.getScale());
   }
   requestAnimationFrame(frame);
 }
@@ -246,6 +248,10 @@ window.createStar = function () {
 window.createBody = function () {
   mode = MODES.BODY_POINTING;
   newbody = gravityLab.createBody();
+}
+
+window.resetTime = function() {
+  totalTime = 0;
 }
 
 init();
