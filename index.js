@@ -13,11 +13,11 @@ const renderer = require('./renderer');
 const glb = typeof window !== 'undefined' ? window : global;
 
 const MODES = {
-  POINTER: 1,
-  STAR: 2,
-  BODY_POINTING: 3,
-  BODY_VELOCITY: 4,
-  MOVE: 5
+    POINTER: 1,
+    STAR: 2,
+    BODY_POINTING: 3,
+    BODY_VELOCITY: 4,
+    MOVE: 5
 };
 
 let velocityScale = null;
@@ -39,224 +39,228 @@ let currentBody = null;
 let orbit_coords = new Array(100 * 2);
 
 function init() {
-  controls.init(document);
-  renderer.init(controls.getCanvas(), controls.getBackCanvas());
-  gravityLab.init();
-  reset();
-  registerEvents();
+    controls.init(document);
+    renderer.init(controls.getCanvas(), controls.getBackCanvas());
+    gravityLab.init();
+    reset();
+    registerEvents();
 }
 
 function resetMode() {
-  mode = MODES.POINTER;
+    mode = MODES.POINTER;
 }
 
 function setDefaults() {
-  time_scale = Constants.DEFAULT_TIME_SCALE;
-  controls.setTimeScale(Constants.DEFAULT_TIME_SCALE);
-  controls.setGridSize(Constants.DEFAULT_GRID_SIZE);
-  controls.setVelocityScale(Constants.DEFAULT_VELOCITY_SCALE);
-  controls.setScale(Constants.DEFAULT_SCALE);
-  gravityLab.setScale(Constants.DEFAULT_SCALE);
-  gravityLab.setTimeScale(Constants.DEFAULT_TIME_SCALE);
-  renderer.setScale(Constants.DEFAULT_SCALE);
+    time_scale = Constants.DEFAULT_TIME_SCALE;
+    controls.setTimeScale(Constants.DEFAULT_TIME_SCALE);
+    controls.setGridSize(Constants.DEFAULT_GRID_SIZE);
+    controls.setVelocityScale(Constants.DEFAULT_VELOCITY_SCALE);
+    controls.setScale(Constants.DEFAULT_SCALE);
+    gravityLab.setScale(Constants.DEFAULT_SCALE);
+    gravityLab.setTimeScale(Constants.DEFAULT_TIME_SCALE);
+    renderer.setScale(Constants.DEFAULT_SCALE);
 }
 
 function requestResize() {
-  requestResizeCheck = true;
+    requestResizeCheck = true;
 }
 
 function cancelResizeRequest() {
-  requestResizeCheck = false;
+    requestResizeCheck = false;
 }
 
 function isResizeRequested() {
-  return requestResizeCheck;
+    return requestResizeCheck;
 }
 
 function isCenterRequested() {
-  return requestCenterCheck;
+    return requestCenterCheck;
 }
 
 function requestCenter() {
-  requestCenterCheck = true;
+    requestCenterCheck = true;
 }
 
 function cancelCenterRequest() {
-  requestCenterCheck = false;
+    requestCenterCheck = false;
 }
 
 function reset() {
-  gravityLab.reset();
-  resetMode();
-  setDefaults();
-  requestResize();
-  requestCenter();
+    gravityLab.reset();
+    resetMode();
+    setDefaults();
+    requestResize();
+    requestCenter();
 }
 
 function registerEvents() {
-  registerMouseEvents();
+    registerMouseEvents();
 }
 
 function registerMouseEvents() {
-  var canvas = controls.getCanvas();
+    var canvas = controls.getCanvas();
 
-  canvas.onmousemove = onMouseMove;
-  canvas.onmouseup = onMouseUp;
-  canvas.onmousedown = onMouseDown;
+    canvas.onmousemove = onMouseMove;
+    canvas.onmouseup = onMouseUp;
+    canvas.onmousedown = onMouseDown;
 
 }
 
 function registerCenterMove() {
-  controls.setOffsets(renderer.getXOffset()|0, renderer.getYOffset()|0);
+    controls.setOffsets(renderer.getXOffset() | 0, renderer.getYOffset() | 0);
 }
 
 function onMouseMove(e) {
-  var px = e.clientX;
-  var py = e.clientY;
+    var px = e.clientX;
+    var py = e.clientY;
 
-  controls.mouseMove(e.clientX, e.clientY);
-  switch (mode) {
-    case MODES.POINTER:
-      break;
-    case MODES.MOVE:
-      renderer.clear();
-      renderer.move(px - mx, py - my);
-      registerCenterMove(); 
-      mx = px;
-      my = py;
-      break;
-    case MODES.STAR:
-      newbody.tx = px;
-      newbody.ty = py;
-      break;
-    case MODES.BODY_POINTING:
-      newbody.tx = px;
-      newbody.ty = py;
-      break;
-    case MODES.BODY_VELOCITY:
-      newbody.tvx = px;
-      newbody.tvy = py;
-      newbody.vx = (newbody.tvx - newbody.tx) * controls.getVelocityScale();
-      newbody.vy = (newbody.ty - newbody.tvy) * controls.getVelocityScale();
-      break;
-  }
+    controls.mouseMove(e.clientX, e.clientY);
+    switch (mode) {
+        case MODES.POINTER:
+            break;
+        case MODES.MOVE:
+            renderer.clear();
+            renderer.move(px - mx, py - my);
+            registerCenterMove();
+            mx = px;
+            my = py;
+            break;
+        case MODES.STAR:
+            newbody.tx = px;
+            newbody.ty = py;
+            break;
+        case MODES.BODY_POINTING:
+            newbody.tx = px;
+            newbody.ty = py;
+            break;
+        case MODES.BODY_VELOCITY:
+            newbody.tvx = px;
+            newbody.tvy = py;
+            newbody.vx = (newbody.tvx - newbody.tx) * controls.getVelocityScale();
+            newbody.vy = (newbody.ty - newbody.tvy) * controls.getVelocityScale();
+            break;
+    }
 }
 
 function onMouseUp(e) {
-  var px = e.clientX;
-  var py = e.clientY;
+    var px = e.clientX;
+    var py = e.clientY;
 
-  switch (mode) {
-    case MODES.MOVE:
-      //selected = getSelected(px, py);
-      mode = MODES.POINTER;
-      break;
-    case MODES.MOVE:
-      mode = MODES.POINTER;
-      break;
-    case MODES.STAR:
-      gravityLab.addBody(newbody, renderer.clientToXViewport(px), renderer.clientToYViewport(py));
-      newbody = null;
-      mode = MODES.POINTER;
-      break;
-    case MODES.BODY_POINTING:
-      newbody.tx = px;
-      newbody.ty = py;
-      newbody.tvx = newbody.tx;
-      newbody.tvy = newbody.ty;
-      mode = MODES.BODY_VELOCITY;
-      break;
-    case MODES.BODY_VELOCITY:
-      gravityLab.addBody(newbody,
-        renderer.clientToXViewport(newbody.tx),
-        renderer.clientToYViewport(newbody.ty));
-      newbody = null;
-      mode = MODES.POINTER;
-  }
+    switch (mode) {
+        case MODES.MOVE:
+            //selected = getSelected(px, py);
+            mode = MODES.POINTER;
+            break;
+        case MODES.MOVE:
+            mode = MODES.POINTER;
+            break;
+        case MODES.STAR:
+            gravityLab.addBody(newbody, renderer.clientToXViewport(px), renderer.clientToYViewport(py));
+            newbody = null;
+            mode = MODES.POINTER;
+            break;
+        case MODES.BODY_POINTING:
+            newbody.tx = px;
+            newbody.ty = py;
+            newbody.tvx = newbody.tx;
+            newbody.tvy = newbody.ty;
+            mode = MODES.BODY_VELOCITY;
+            break;
+        case MODES.BODY_VELOCITY:
+            gravityLab.addBody(newbody,
+                renderer.clientToXViewport(newbody.tx),
+                renderer.clientToYViewport(newbody.ty));
+            newbody = null;
+            mode = MODES.POINTER;
+    }
 }
 
 function onMouseDown(e) {
-  switch (mode) {
-    case MODES.POINTER:
-      mx = e.clientX;
-      my = e.clientY;
-      mode = MODES.MOVE;
-      break;
-  }
+    switch (mode) {
+        case MODES.POINTER:
+            mx = e.clientX;
+            my = e.clientY;
+            mode = MODES.MOVE;
+            break;
+    }
 }
 
 function frame(t) {
 
-  var delta = (t - t1) / 1000;
-  t1 = t;
-  totalTime += delta;
+    var delta = (t - t1) / 1000;
+    t1 = t;
+    totalTime += delta;
 
-  renderer.clear();
+    renderer.clear();
 
-  if (isResizeRequested()) {
-    renderer.resizeCanvas(context, orbits_context);
-    cancelResizeRequest();
-    registerCenterMove();
-  }
+    if (isResizeRequested()) {
+        renderer.resizeCanvas(context, orbits_context);
+        cancelResizeRequest();
+        registerCenterMove();
+    }
 
-  if (isCenterRequested()) {
-    renderer.center();
-    cancelCenterRequest();
-    registerCenterMove();
-  }
+    if (isCenterRequested()) {
+        renderer.center();
+        cancelCenterRequest();
+        registerCenterMove();
+    }
 
-  renderer.renderGrid(controls.getGridSize());
+    renderer.renderGrid(controls.getGridSize());
 
-  renderState();
+    renderState();
 
-  if (playing) {
-    controls.showTime(totalTime);
-    gravityLab.updateState(delta);
-    renderer.traceOrbitsPosition(gravityLab.getBodies());
-  }
+    if (playing) {
+        controls.showTime(totalTime);
+        gravityLab.updateState(delta);
+        renderer.traceOrbitsPosition(gravityLab.getBodies());
+    }
 
 
-  if (mode === MODES.STAR) {
-    renderer.renderBodyOn(newbody, newbody.tx, newbody.ty);
-  } else if (mode === MODES.BODY_POINTING) {
-    renderer.renderBodyOn(newbody, newbody.tx, newbody.ty);
-    renderer.renderDistance(newbody.tx, newbody.ty, gravityLab.getBodies());
-  } else if (mode === MODES.BODY_VELOCITY) {
-    renderer.renderBodyOn(newbody, newbody.tx, newbody.ty);
-    renderer.renderBodyVelocity(newbody, controls.getVelocityScale());
-    gravityLab.calculateOrbit(newbody,
-      renderer.clientToXViewport(newbody.tx),
-      renderer.clientToYViewport(newbody.ty),
-      orbit_coords);
-    renderer.renderOrbitPoints(orbit_coords, controls.getScale());
-  }
-  requestAnimationFrame(frame);
+    if (mode === MODES.STAR) {
+        renderer.renderBodyOn(newbody, newbody.tx, newbody.ty);
+    } else if (mode === MODES.BODY_POINTING) {
+        renderer.renderBodyOn(newbody, newbody.tx, newbody.ty);
+        renderer.renderDistance(newbody.tx, newbody.ty, gravityLab.getBodies());
+    } else if (mode === MODES.BODY_VELOCITY) {
+        renderer.renderBodyOn(newbody, newbody.tx, newbody.ty);
+        renderer.renderBodyVelocity(newbody, controls.getVelocityScale());
+        gravityLab.calculateOrbit(newbody,
+            renderer.clientToXViewport(newbody.tx),
+            renderer.clientToYViewport(newbody.ty),
+            orbit_coords);
+        renderer.renderOrbitPoints(orbit_coords, controls.getScale());
+    }
+    requestAnimationFrame(frame);
 }
 
 function renderState() {
-  let bodies = gravityLab.getBodies();
-  for (var b = 0; b < bodies.length; b++) {
-    let body = bodies[b];
-    if (body.gravity) {
-      //renderOrbit(body, bodies, orbits_canvas, orbits_context, context);
-      //renderVectors(body, context);
+    let bodies = gravityLab.getBodies();
+    for (var b = 0; b < bodies.length; b++) {
+        let body = bodies[b];
+        if (body.gravity) {
+            //renderOrbit(body, bodies, orbits_canvas, orbits_context, context);
+            //renderVectors(body, context);
+        }
+        renderer.renderBody(body);
     }
-    renderer.renderBody(body);
-  }
 }
 
-window.createStar = function () {
-  mode = MODES.STAR;
-  newbody = gravityLab.createStar();
+glb.createStar = function () {
+    mode = MODES.STAR;
+    newbody = gravityLab.createStar();
 }
 
-window.createBody = function () {
-  mode = MODES.BODY_POINTING;
-  newbody = gravityLab.createBody();
+glb.createBody = function () {
+    mode = MODES.BODY_POINTING;
+    newbody = gravityLab.createBody();
 }
 
-window.resetTime = function() {
-  totalTime = 0;
+glb.resetTime = function () {
+    totalTime = 0;
+}
+
+glb.cancel = function () {
+    mode = MODES.POINTER;
 }
 
 init();
