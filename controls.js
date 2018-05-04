@@ -19,9 +19,13 @@ let Controls = function() {
     this.timeInfoDays = null;
     this.timeInfoMinutes = null;
     this.timeInfoSeconds = null;
+    this.universeXField = null;
+    this.universeYField = null;
     this.gridSize = 0;
     this.velocityScale = 0;
     this.scale = 0;
+    this.offset_x = 0;
+    this.offset_y = 0;
 };
 
 Controls.prototype.init = function(pContainer) {
@@ -35,6 +39,8 @@ Controls.prototype.init = function(pContainer) {
     this.backCanvas = pContainer.querySelector('#backcanvas');
     this.mouseXField = pContainer.querySelector('#mx');
     this.mouseYField = pContainer.querySelector('#my');
+    this.universeXField = pContainer.querySelector('#umx');
+    this.universeYField = pContainer.querySelector('#umy');
     this.timeScaleField = pContainer.querySelector('#field-tscale');
 
     this.timeInfoYears = pContainer.querySelector("#info-years");
@@ -88,7 +94,10 @@ Controls.prototype.mouseMove = function(mx, my) {
     var y = my - this.canvas.offsetTop;
 
     this.mouseXField.innerHTML = x - this.offset_x; 
-    this.mouseYField.innerHTML = y - this.offset_y;
+    this.mouseYField.innerHTML = this.offset_y - y;
+
+    this.universeXField.innerHTML = ((x - this.offset_x) / this.scale / 1000).toLocaleString(); 
+    this.universeYField.innerHTML = ((this.offset_y - y) / this.scale / 1000).toLocaleString();
 
 }
 

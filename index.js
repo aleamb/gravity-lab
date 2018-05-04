@@ -106,6 +106,10 @@ function registerMouseEvents() {
 
 }
 
+function registerCenterMove() {
+  controls.setOffsets(renderer.getXOffset()|0, renderer.getYOffset()|0);
+}
+
 function onMouseMove(e) {
   var px = e.clientX;
   var py = e.clientY;
@@ -117,6 +121,7 @@ function onMouseMove(e) {
     case MODES.MOVE:
       renderer.clear();
       renderer.move(px - mx, py - my);
+      registerCenterMove(); 
       mx = px;
       my = py;
       break;
@@ -191,13 +196,13 @@ function frame(t) {
   if (isResizeRequested()) {
     renderer.resizeCanvas(context, orbits_context);
     cancelResizeRequest();
-    controls.setOffsets();
+    registerCenterMove();
   }
 
   if (isCenterRequested()) {
     renderer.center();
     cancelCenterRequest();
-    controls.setOffsets(renderer.getXOffset(), renderer.getYOffset());
+    registerCenterMove();
   }
 
   renderer.renderGrid(controls.getGridSize());

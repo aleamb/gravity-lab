@@ -12,8 +12,6 @@ const Constants = require('./constants');
 const GRID_STYLE = 'rgba(100,100,100, 0.5)';
 const CENTER_STYLE = 'rgba(100,100,100, 0.8)';
 
-const UA = 1.496e11;
-
 let Renderer = function () {
   this.canvas = null;
   this.back_canvas = null;
@@ -105,23 +103,31 @@ Renderer.prototype.renderGrid = function (pGridSize) {
 Renderer.prototype.move = function (dx, dy) {
   this.offset_x += dx;
   this.offset_y += dy;
+  this.back_canvas.width |= 0;
 
 }
 
 Renderer.prototype.renderBodyOn = function (body, x, y) {
   this.context.beginPath();
   this.context.fillStyle = body.color;
-  this.context.arc(x - this.canvas.offsetLeft, y - this.canvas.offsetTop,
-    //(1 / SCALE >= RADIUS_SCALE_THRESHOLD) ? 8 : body.radius * SCALE * 1000,
-    8, 0, 2 * Math.PI);
+  this.context.arc(x - this.canvas.offsetLeft, y - this.canvas.offsetTop, 8, 0, 2 * Math.PI);
   this.context.fill();
+}
+
+Renderer.prototype.clientToXViewport = function (clientX) {
+  return clientX - this.canvas.offsetLeft - this.offset_x;
+ 
+}
+
+Renderer.prototype.clientToYViewport = function (clientY) {
+  return this.offset_y - clientY + this.canvas.offsetTop;
 }
 
 
 Renderer.prototype.renderBody = function (body) {
   this.context.beginPath();
   this.context.fillStyle = body.color;
-  this.context.arc((body.x * this.scale) + this.offset_x, (body.y * this.scale) + this.offset_y, 8, 0, 2 * Math.PI);
+  this.context.arc((body.x * this.scale) + this.offset_x, this.offset_y - (body.y * this.scale), 8, 0, 2 * Math.PI);
   this.context.fill();
 }
 
@@ -142,19 +148,11 @@ Renderer.prototype.setScale = function (scale) {
   this.scale = scale;
 }
 
-Renderer.prototype.clientToXViewport = function (clientX) {
-  return clientX - this.canvas.offsetLeft - this.offset_x;
-}
-
-Renderer.prototype.clientToYViewport = function (clientY) {
-  return clientY - this.canvas.offsetTop - this.offset_y;
-}
-
 Renderer.prototype.renderDistance = function (cx, cy, bodies) {
   for (var i = 0; i < bodies.length; i++) {
 
     var tx = (bodies[i].x) * this.scale + this.offset_x;
-    var ty = (bodies[i].y) * this.scale + this.offset_y;
+    var ty = this.offset_y - (bodies[i].y) * this.scale;
 
 
     this.context.strokeStyle = 'black';
@@ -172,8 +170,8 @@ Renderer.prototype.distanceString = function (cx, cy, tx, ty) {
 
   var distance = this.calculateDistance(cx, cy, tx, ty);
 
-  if (distance > UA) {
-    return ((distance / UA).toLocaleString()) + ' UA';
+  if (distance > Constants.UA) {
+    return ((distance /Constants.UA).toLocaleString()) + ' UA';
   } else {
     return (distance / 1000).toLocaleString() + ' Km.';
   }
@@ -192,10 +190,10 @@ Renderer.prototype.renderOrbitPoints = function (points, scale) {
   this.context.strokeStyle = 'black';
 
 
-  this.context.moveTo(points[0] * scale + this.offset_x, points[1] * scale + this.offset_y);
+  this.context.moveTo(points[0] * scale + this.offset_x, this.offset_y - points[1] * scale);
 
   for (let p = 2; p < npoints; p += 2) {
-    this.context.lineTo(points[p] * scale + this.offset_x, points[p + 1] * scale + this.offset_y);
+    this.context.lineTo(points[p] * scale + this.offset_x, this.offset_y - points[p + 1] * scale);
     this.context.stroke();
 
   }
@@ -207,7 +205,7 @@ Renderer.prototype.traceOrbitsPosition = function (bodies) {
 
     this.orbits_context.beginPath();
     this.orbits_context.fillStyle = body.color;
-    this.orbits_context.arc((body.x * this.scale) + this.offset_x, (body.y * this.scale) + this.offset_y, 2, 0, 2 * Math.PI);
+    this.orbits_context.arc((body.x * this.scale) + this.offset_x, + this.offset_y - (body.y * this.scale), 2, 0, 2 * Math.PI);
     this.orbits_context.fill();
   }
   if (bodies.length)
