@@ -18,6 +18,10 @@
   "homepage": "https://github.com/aleamb/gravity-lab#readme",
   "devDependencies": {
     "browser-sync": "^2.23.7",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-import": "^2.11.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-react": "^7.7.0",
     "gulp": "^3.9.1",
     "gulp-browserify": "^0.5.1"
   },
