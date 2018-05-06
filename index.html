@@ -1,10 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-  <head>
-    <title>Playing with gravity.</title>
-    <link type="text/css" rel="stylesheet" href="styles.css" media="all">
-  </head>
-  <body>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Playing with gravity.</title>
+  <link type="text/css" rel="stylesheet" href="styles.css" media="all">
+</head>
+
+<body>
+  <div id="gravity-lab">
     <div class="controls">
       <div class="body-controls">
         <fieldset>
@@ -13,102 +17,121 @@
           <button class="body-button" type="button" onclick="createBody()">Body</button>
           <button class="cancel-button" type="button" onclick="cancel()">Cancel</button>
         </fieldset>
-       
+
       </div>
+
       <div class="body-parameters">
         <form>
-            <fieldset>
-              <legend>Body parameters</legend>
-              <div class="field xpos">
-                <label for="field-posx">X position</label>
-                <input id="field-posx" type="number" step="1">
-              </div>
-              <div class="field ypos">
-                <label for="field-posy">Y position</label>
-                <input id="field-posy" type="number" step="1">
-              </div>
-              <div class="field distance-scale">
-                UA<input type="radio" name="scale-pos" checked value="ua">
-                Km<input type="radio" name="scale-pos" value="km">
-              </div>
-              <div class="field field-mass">
-                <label>Mass (Kg)</label>
-                <input id="field-mass" type="number" >
-              </div>
-              <div class="field field-gravity">
-                <label>Enable gravity</label><input id="field-proc" type="checkbox" checked>
-              </div>
-              <div></div>
-              <div class="field field-vx">
-                <label>Vx (Km/s)</label>
-                <input id="field-vx" type="number" step="10">
-              </div>
-              <div class="field field-vy">
-                <label>Vy (Km/s)</label>
-                <input id="field-vy" type="number" step="10">
-              </div>
-              <div class="field field-radius">
-                <label>Diameter (Km)</label>
-                <input id="field-radius" type="number" step="5">
-              </div>
-              <div class="field">
-                <label for="color">Color</label>
-                <input type="color" value="#ff0000" id="field-color">
-              </div>
-              <span id="messages"></span>
-              <div class="parameters-actions">
-                  <button class="center-button" type="button" onclick="setNewBody()">Create</button>
-                  <button class="center-button" type="button" onclick="updateBody()">Update</button>
-              </div>
+          <fieldset>
+            <legend>Body parameters</legend>
+            <div class="field xpos">
+              <label for="field-xpos">X position (Km.)</label>
+              <input id="field-xpos" type="number" step="1" autocomplete="off" v-model="newbody.x">
+            </div>
+            <div class="field ypos">
+              <label for="field-ypos">Y position (Km.)</label>
+              <input id="field-ypos" type="number" step="1" autocomplete="off" v-model="newbody.y">
+            </div>
+            
+            <div class="field field-mass">
+              <label>Mass (Kg)</label>
+              <input id="field-mass" type="number" autocomplete="off" v-model="newbody.mass">
+            </div>
+            <div class="field field-gravity">
+              <label>Enable gravity</label>
+              <input id="field-gravity" type="checkbox" v-model="newbody.gravity">
+            </div>
+            <div></div>
+            <div class="field field-vx">
+              <label>Vx (Km/s)</label>
+              <input id="field-vx" type="number" step="10" autocomplete="off" v-model.number="newbody.vx">
+            </div>
+            <div class="field field-vy">
+              <label>Vy (Km/s)</label>
+              <input id="field-vy" type="number" step="10" autocomplete="off" v-model.number="newbody.vy">
+            </div>
+            <div class="field field-diameter">
+              <label>Diameter (Km)</label>
+              <input id="field-diameter" type="number" step="5" autocomplete="off" v-model.number="newbody.diameter">
+            </div>
+            <div class="field">
+              <label for="field-color">Color</label>
+              <input type="color" value="#ff0000" id="field-color" v-model="newbody.color">
+            </div>
+            <span id="messages"></span>
+            <div class="parameters-actions">
+              <button class="center-button" type="button" onclick="createNewBody()">Create</button>
+            </div>
           </fieldset>
         </form>
       </div>
       <div class="general-parameters">
         <form>
-           <fieldset>
+          <fieldset>
             <legend>General parameters</legend>
-              <div class="field"><label>G</label><input id="field-g" type="number" oninput="doGChange(this)"></div>
-              <div class="field"><label>Scale (Km. by pixel) </label><input id="field-scale" type="number" step="10000" oninput="doScale(this)"></div>
-              <div class="field"><label>Velocity Scale (m/s by pixel) </label><input id="field-vscale" type="number" step="5" oninput="doVScale(this)"></div>
-              <div class="field"><label>Time Scale (1s = Universe X seconds) </label><input id="field-tscale" type="number" step="1000" oninput="doTScale(this)"></div>
-              <div class="field"><label>Grid size (px): </label><input id="field-grid" type="number" step="5"  oninput="doGrid(this)"></div>
+            <div class="field">
+              <label>G</label>
+              <input id="field-g" type="number" v-model.number="generalParameters.g">
+            </div>
+            <div class="field">
+              <label>Scale (Km. by pixel) </label>
+              <input id="field-scale" type="number" step="1" v-model.number="generalParameters.scale">
+            </div>
+            <div class="field">
+              <label>Velocity Scale (Km/s by pixel) </label>
+              <input type="number" step="5" v-model.number="generalParameters.velocityScale">
+            </div>
+            <div class="field">
+              <label>Time Scale (1s = Univ. seconds) </label>
+              <input id="field-tscale" type="number" step="1000" v-model.number="generalParameters.timeScale">
+            </div>
+            <div class="field">
+              <label>Grid size (px): </label>
+              <input id="field-grid" type="number" step="5" v-model.number="generalParameters.gridSize">
+            </div>
           </fieldset>
         </form>
       </div>
       <div class="general-controls">
-          <fieldset>
-              <legend>General actions</legend>
-                <button class="erase-button" type="button" onclick="eraseAll()">Erase All</button>
-                <button id="play-button" class="button" type="button" onclick="play_stop()">■</button>
-                <button id="reset.time" class="button" type="button" onclick="resetTime()">Reset time</button>
-                <button class="center-button" type="button" onclick="center()">Center Grid</button>
-            </fieldset>
-      </div>
-      <div class="body-info">
-          <fieldset>
-            <legend>Body info</legend>
-            <span>Mass:</span></span></Mass><span id="body-info-mass"></span>
-          </fieldset>
+        <fieldset>
+          <legend>General actions</legend>
+          <button class="erase-button" type="button" onclick="doReset()">Reset</button>
+          <button id="play-button" class="button" type="button" onclick="play_stop()">■</button>
+          <button id="reset.time" class="button" type="button" onclick="resetTime()">Reset time</button>
+          <button class="center-button" type="button" onclick="center()">Center Grid</button>
+          <button class="center-button" type="button" onclick="centerSelected()">Center Selected</button>
+          <button class="center-button" type="button" onclick="deleteSelected()">Delete Selected</button>
+        </fieldset>
       </div>
     </div>
 
     <div class="data-info">
-        <div>
-          <span>Screen Pos: </span>X: <span id="mx"></span>, Y: <span id="my"></span>
-        </div>
-        <div>
-          <span>Universe Pos: </span>X: <span id="umx"></span> Km., Y: <span id="umy"></span> Km.
-        </div>
-        <div>
-            <span>Time: </span><span id="info-years"></span>y - <span id="info-days"></span>d - <span id="info-hours"></span>h - <span id="info-minutes"></span>m - <span id="info-seconds"></span>s
-        </div>
+      <div>
+        <span>Screen Pos: </span>X:
+        <span id="mx">{{generalParameters.mx}}</span>, Y:
+        <span id="my">{{generalParameters.my}}</span>
+      </div>
+      <div>
+        <span>Universe Pos: </span>X:
+        <span id="umx">{{generalParameters.xpos}}</span> Km., Y:
+        <span id="umy">{{generalParameters.ypos}}</span> Km.
+      </div>
+      <div>
+        <span>Time: </span>
+        <span id="info-years">{{totalTime.y | formatTime }}</span>y -
+        <span id="info-days">{{totalTime.d | formatTime }}</span>d -
+        <span id="info-hours">{{totalTime.h | formatTime }}</span>h -
+        <span id="info-minutes">{{totalTime.m | formatTime }}</span>m -
+        <span id="info-seconds">{{totalTime.s | formatTime }}</span>s
+      </div>
     </div>
+  </div>
+  <div class="universe">
+    <canvas id="c"></canvas>
+    <canvas id="backcanvas" style="display: none"></canvas>
+  </div>
 
-    <div class="universe">
-      <canvas id="c"></canvas>
-      <canvas id="backcanvas" style="display: none"></canvas>
-    </div>
+  <script src="dist/index.js"></script>
+</body>
 
-    <script src="dist/index.js"></script>
-  </body>
 </html>

@@ -9,6 +9,9 @@ const Constants = require('./constants');
 const gravityLab = require('./gravityLab');
 const controls = require('./controls');
 const renderer = require('./renderer');
+const Body = require('./body');
+const Vue = require("vue");
+let numberFormatter = require('number-formatter');
 
 const glb = typeof window !== 'undefined' ? window : global;
 
@@ -20,30 +23,34 @@ const MODES = {
     MOVE: 5
 };
 
-let velocityScale = null;
-let scale = null;
 let requestResizeCheck = null;
 let requestCenterCheck = null;
-let canvas = null;
-let context = null;
-let orbits_canvas = null;
-let orbits_context = null;
 let t1 = 0;
 let totalTime = 0;
-let time_scale = 0;
 let playing = true;
 let mode = 0;
 let mx, my = 0;
-let newbody = null;
-let currentBody = null;
 let orbit_coords = new Array(100 * 2);
+let gravityLabApp = null;
 
 function init() {
+    initVueApp();
     controls.init(document);
-    renderer.init(controls.getCanvas(), controls.getBackCanvas());
     gravityLab.init();
+    renderer.init(controls.getCanvas(), controls.getBackCanvas());
     reset();
     registerEvents();
+
+}
+
+function currentBody(b) {
+    if (!gravityLabApp) {
+        return null;
+    }
+    if (b) {
+        gravityLabApp.newbody = b;
+    }
+    return gravityLabApp.newbody;
 }
 
 function resetMode() {
@@ -51,14 +58,17 @@ function resetMode() {
 }
 
 function setDefaults() {
+    gravityLabApp.generalParameters.velocityScale = Constants.DEFAULT_VELOCITY_SCALE;
+    gravityLabApp.generalParameters.scale = Constants.DEFAULT_SCALE;
+    gravityLabApp.generalParameters.g = Constants.G;
+    gravityLabApp.generalParameters.timeScale = Constants.DEFAULT_TIME_SCALE;
+    gravityLabApp.generalParameters.gridSize = Constants.DEFAULT_GRID_SIZE;
+
     time_scale = Constants.DEFAULT_TIME_SCALE;
-    controls.setTimeScale(Constants.DEFAULT_TIME_SCALE);
-    controls.setGridSize(Constants.DEFAULT_GRID_SIZE);
-    controls.setVelocityScale(Constants.DEFAULT_VELOCITY_SCALE);
-    controls.setScale(Constants.DEFAULT_SCALE);
-    gravityLab.setScale(Constants.DEFAULT_SCALE);
-    gravityLab.setTimeScale(Constants.DEFAULT_TIME_SCALE);
     renderer.setScale(Constants.DEFAULT_SCALE);
+    gravityLab.setScale(Constants.DEFAULT_SCALE);
+    gravityLab.setTimeScale (Constants.DEFAULT_TIME_SCALE);
+    gravityLab.setG(Constants.G);
 }
 
 function requestResize() {
@@ -106,38 +116,38 @@ function registerMouseEvents() {
 
 }
 
-function registerCenterMove() {
-    controls.setOffsets(renderer.getXOffset() | 0, renderer.getYOffset() | 0);
-}
-
 function onMouseMove(e) {
     var px = e.clientX;
     var py = e.clientY;
 
-    controls.mouseMove(e.clientX, e.clientY);
+    gravityLabApp.generalParameters.mx = px - controls.getCanvas().offsetLeft - renderer.getXOffset();
+    gravityLabApp.generalParameters.my = renderer.getYOffset() - (py - controls.getCanvas().offsetTop);
+
+    gravityLabApp.generalParameters.xpos = (gravityLabApp.generalParameters.mx * gravityLabApp.generalParameters.scale).toLocaleString(); 
+    gravityLabApp.generalParameters.ypos = (gravityLabApp.generalParameters.my * gravityLabApp.generalParameters.scale ).toLocaleString();
+
     switch (mode) {
         case MODES.POINTER:
             break;
         case MODES.MOVE:
             renderer.clear();
             renderer.move(px - mx, py - my);
-            registerCenterMove();
             mx = px;
             my = py;
-            break;
+            break;  
         case MODES.STAR:
-            newbody.tx = px;
-            newbody.ty = py;
+            currentBody().tx = px;
+            currentBody().ty = py;
             break;
         case MODES.BODY_POINTING:
-            newbody.tx = px;
-            newbody.ty = py;
+            currentBody().tx = px;
+            currentBody().ty = py;
             break;
         case MODES.BODY_VELOCITY:
-            newbody.tvx = px;
-            newbody.tvy = py;
-            newbody.vx = (newbody.tvx - newbody.tx) * controls.getVelocityScale();
-            newbody.vy = (newbody.ty - newbody.tvy) * controls.getVelocityScale();
+            currentBody().tvx = px;
+            currentBody().tvy = py;
+            currentBody().vx = (currentBody().tvx - currentBody().tx) * gravityLabApp.generalParameters.velocityScale;
+            currentBody().vy = (currentBody().ty - currentBody().tvy) * gravityLabApp.generalParameters.velocityScale;
             break;
     }
 }
@@ -148,29 +158,25 @@ function onMouseUp(e) {
 
     switch (mode) {
         case MODES.MOVE:
-            //selected = getSelected(px, py);
-            mode = MODES.POINTER;
-            break;
-        case MODES.MOVE:
             mode = MODES.POINTER;
             break;
         case MODES.STAR:
-            gravityLab.addBody(newbody, renderer.clientToXViewport(px), renderer.clientToYViewport(py));
-            newbody = null;
+            gravityLab.addBody(currentBody(), renderer.clientToXViewport(px), renderer.clientToYViewport(py));
+            currentBody(new Body());
             mode = MODES.POINTER;
             break;
         case MODES.BODY_POINTING:
-            newbody.tx = px;
-            newbody.ty = py;
-            newbody.tvx = newbody.tx;
-            newbody.tvy = newbody.ty;
+            currentBody().tx = px;
+            currentBody().ty = py;
+            currentBody().tvx = currentBody().tx;
+            currentBody().tvy = currentBody().ty;
             mode = MODES.BODY_VELOCITY;
             break;
         case MODES.BODY_VELOCITY:
-            gravityLab.addBody(newbody,
-                renderer.clientToXViewport(newbody.tx),
-                renderer.clientToYViewport(newbody.ty));
-            newbody = null;
+            gravityLab.addBody(currentBody(),
+                renderer.clientToXViewport(currentBody().tx),
+                renderer.clientToYViewport(currentBody().ty));
+            currentBody(new Body());
             mode = MODES.POINTER;
     }
 }
@@ -178,6 +184,9 @@ function onMouseUp(e) {
 function onMouseDown(e) {
     switch (mode) {
         case MODES.POINTER:
+            let px = e.clientX;
+            let py = e.clientY;
+            setSelected(renderer.clientToXViewport(px) , renderer.clientToYViewport(py));
             mx = e.clientX;
             my = e.clientY;
             mode = MODES.MOVE;
@@ -186,7 +195,7 @@ function onMouseDown(e) {
 }
 
 function frame(t) {
-
+    
     var delta = (t - t1) / 1000;
     t1 = t;
     totalTime += delta;
@@ -194,41 +203,37 @@ function frame(t) {
     renderer.clear();
 
     if (isResizeRequested()) {
-        renderer.resizeCanvas(context, orbits_context);
+        renderer.resizeCanvas();
         cancelResizeRequest();
-        registerCenterMove();
     }
 
     if (isCenterRequested()) {
         renderer.center();
         cancelCenterRequest();
-        registerCenterMove();
     }
 
-    renderer.renderGrid(controls.getGridSize());
+    renderer.renderGrid(gravityLabApp.generalParameters.gridSize);
 
     renderState();
 
     if (playing) {
-        controls.showTime(totalTime);
+        countTime(delta);
         gravityLab.updateState(delta);
-        renderer.traceOrbitsPosition(gravityLab.getBodies());
     }
 
-
     if (mode === MODES.STAR) {
-        renderer.renderBodyOn(newbody, newbody.tx, newbody.ty);
+        renderer.renderBodyOn(currentBody(), currentBody().tx, currentBody().ty);
     } else if (mode === MODES.BODY_POINTING) {
-        renderer.renderBodyOn(newbody, newbody.tx, newbody.ty);
-        renderer.renderDistance(newbody.tx, newbody.ty, gravityLab.getBodies());
+        renderer.renderBodyOn(currentBody(), currentBody().tx, currentBody().ty);
+        renderer.renderDistance(currentBody().tx, currentBody().ty, gravityLab.getBodies());
     } else if (mode === MODES.BODY_VELOCITY) {
-        renderer.renderBodyOn(newbody, newbody.tx, newbody.ty);
-        renderer.renderBodyVelocity(newbody, controls.getVelocityScale());
-        gravityLab.calculateOrbit(newbody,
-            renderer.clientToXViewport(newbody.tx),
-            renderer.clientToYViewport(newbody.ty),
+        renderer.renderBodyOn(currentBody(), currentBody().tx, currentBody().ty);
+        renderer.renderBodyVelocity(currentBody(), gravityLabApp.generalParameters.velocityScale);
+        gravityLab.calculateOrbit(currentBody(),
+            renderer.clientToXViewport(currentBody().tx),
+            renderer.clientToYViewport(currentBody().ty),
             orbit_coords);
-        renderer.renderOrbitPoints(orbit_coords, controls.getScale());
+        renderer.renderOrbitPoints(orbit_coords);
     }
     requestAnimationFrame(frame);
 }
@@ -238,29 +243,151 @@ function renderState() {
     for (var b = 0; b < bodies.length; b++) {
         let body = bodies[b];
         if (body.gravity) {
-            //renderOrbit(body, bodies, orbits_canvas, orbits_context, context);
             //renderVectors(body, context);
         }
         renderer.renderBody(body);
+        renderer.traceOrbitsPosition(gravityLab.getBodies());
     }
+}
+
+function countTime(t) {
+    let st = t * gravityLabApp.generalParameters.timeScale;
+    let timeObject = gravityLabApp.totalTime;
+    timeObject.total += st;
+    st = timeObject.total;
+    timeObject.y = (st / (86400 * 365)) | 0;
+    timeObject.d = (st / 86400 % 365) | 0;
+    timeObject.h = ((st / 3600) % 24) | 0;
+    timeObject.m = (st / 60 % 60)| 0;
+    timeObject.s = (st % 60)| 0;
+}
+
+function bodyCoordsToClientViewport(body) {
+    return [(body.x / (gravityLabApp.generalParameters.scale))|0, (body.y / (gravityLabApp.generalParameters.scale))|0];
+}
+
+function setSelected(px, py) {
+    let bodies = gravityLab.getBodies();
+    let selected = null;
+    for (var i = 0; i < bodies.length; i++) {
+      let body = bodies[i];
+      body.selected = false;
+      let coords = bodyCoordsToClientViewport(body);
+      var x = coords[0];
+      var y = coords[1];
+      if (x - 10 < px && x + 10 > px && y -10 < py && y + 10 > py) {
+        body.selected = true;
+        selected = body;
+        currentBody(body);
+      }
+    }
+    if (!selected) {
+        currentBody(new Body());
+    }
+    return selected;
+  }
+
+function initVueApp() {
+    Vue.filter('formatTime', function(value) {
+        return numberFormatter('000', value);
+    });
+    gravityLabApp = new Vue({
+        el: '#gravity-lab',
+        watch: {
+            'generalParameters.scale': function(newValue, oldValue) {
+                renderer.clearOrbits();
+                gravityLab.setScale(newValue);
+                renderer.setScale(newValue);
+                if (currentBody().selected) {
+                    glb.centerSelected();
+                }
+            },
+            'generalParameters.timeScale': function(newValue, oldValue) {
+                gravityLab.setTimeScale(newValue);
+            },
+            'generalParameters.g': function(newValue, oldValue) {
+                gravityLab.setG(newValue);
+            }
+        },
+        data: {
+            newbody: new Body(),
+            generalParameters: {     
+                velocityScale: null,
+                scale: null,
+                g: null,
+                timeScale:null,
+                gridSize: null,
+                scalePos: 'ua',
+                mx: 0,
+                my: 0,
+                xpos: 0,
+                ypos: 0
+            },
+            totalTime: { total: 0, y: 0, d: 0, h: 0, m: 0, s: 0 },
+            selected: {}
+        }
+    });
 }
 
 glb.createStar = function () {
     mode = MODES.STAR;
-    newbody = gravityLab.createStar();
-}
+    currentBody(gravityLab.createStar());
+};
 
 glb.createBody = function () {
     mode = MODES.BODY_POINTING;
-    newbody = gravityLab.createBody();
-}
+    currentBody(gravityLab.createBody());
+};
 
 glb.resetTime = function () {
     totalTime = 0;
-}
+    gravityLabApp.totalTime.total = 0;
+};
 
 glb.cancel = function () {
     mode = MODES.POINTER;
+};
+
+glb.createNewBody = function() {
+    var body = gravityLab.createBody();
+    body.x = currentBody().x;
+    body.y = currentBody().y;
+    body.vx = currentBody().vx;
+    body.vy = currentBody().vy;
+    body.mass = currentBody().mass;
+    body.color = currentBody().color;
+    body.diameter = currentBody().diameter;
+    body.gravity = currentBody().gravity;
+    gravityLab.addBody(body);
+}
+
+glb.play_stop = function() {
+    playing = !playing;
+    document.querySelector('#play-button').innerHTML = playing ? '■' : '▶';
+}
+
+glb.center = function() {
+    requestResize();
+    requestCenter();
+}
+
+glb.doReset = function() {
+    reset();
+    center();
+}
+glb.centerSelected = function() {
+    var body = currentBody();
+    let coords = bodyCoordsToClientViewport(body);
+    renderer.move(controls.getCanvas().width / 2 - (renderer.getXOffset() + coords[0]) , controls.getCanvas().height / 2 - (renderer.getYOffset() - coords[1]));
+}
+glb.deleteSelected = function() {
+    let bodies = gravityLab.getBodies();
+    for (let i = 0; i < bodies.length; i++) {
+        if (bodies[i].selected) {
+            gravityLab.deleteBody(bodies[i]);
+            return;
+        }
+    }
 }
 
 init();

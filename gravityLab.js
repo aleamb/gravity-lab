@@ -19,18 +19,25 @@ let GravityLab = function () {
   this.cBody = {};
   this.F = {};
   this.time_scale = null;
+  this.g = 0;
 }
 
 GravityLab.prototype.init = function () {
   this.reset();
 }
+
 GravityLab.prototype.reset = function () {
   this.bodies = [];
   this.t1 = 0;
   this.totalTime = 0;
 }
+
+GravityLab.prototype.setG = function(value) {
+  this.g = Number(value);
+}
+
 GravityLab.prototype.setScale = function (pScale) {
-  this.scale = pScale;
+  this.scale = 1 / (pScale);
 }
 GravityLab.prototype.setTimeScale = function (value) {
   this.time_scale = value;
@@ -39,7 +46,7 @@ GravityLab.prototype.createStar = function () {
 
   this.newbody = new Body();
   this.newbody.gravity = false;
-  this.newbody.radius = Constants.STAR_DEFAULT_RADIUS;
+  this.newbody.diameter = Constants.STAR_DEFAULT_DIAMETER;
   this.newbody.mass = Constants.STAR_DEFAULT_MASS;
   this.newbody.type = Body.BODY_TYPES.STAR;
   this.newbody.color = Constants.STAR_DEFAULT_COLOR;
@@ -49,16 +56,20 @@ GravityLab.prototype.createStar = function () {
 GravityLab.prototype.createBody = function () {
 
   this.newbody = new Body();
-  this.newbody.radius = Constants.BODY_DEFAULT_RADIUS;
+  this.newbody.diameter = Constants.BODY_DEFAULT_DIAMETER;
   this.newbody.mass = Constants.BODY_DEFAULT_MASS;
   this.newbody.type = Body.BODY_TYPES.BODY;
-  this.newbody.color = 'rgba(' + (Math.random() * 255 | 0) + ',' + (Math.random() * 255 | 0) + ',' + (Math.random() * 255 | 0) + ', 1.0)';
+  this.newbody.color = '#' + (Math.random() * 255 | 0).toString(16).toUpperCase() + (Math.random() * 255 | 0).toString(16).toUpperCase() +  (Math.random() * 255 | 0).toString(16).toUpperCase() ;
   return this.newbody;
 }
 
 GravityLab.prototype.addBody = function (body, xPos, yPos) {
-  body.x = xPos / this.scale;
-  body.y = yPos / this.scale;
+
+  if (xPos !== undefined)
+    body.x = xPos / this.scale;
+  if (yPos !== undefined)
+    body.y = yPos / this.scale;
+
   this.bodies.push(body);
 }
 
@@ -77,8 +88,10 @@ GravityLab.prototype.updateState = function (t) {
   let limit = (timestep / dt) | 0;
   let bodies = this.bodies;
   let F = this.F;
-  let G = Constants.G;
+  let G = this.g;
 
+  this.scaleBodies();
+ 
   for (let l = 0; l < limit; l++) {
     for (let i = 0; i < bodies.length; i++) {
       body = bodies[i];
@@ -103,13 +116,14 @@ GravityLab.prototype.updateState = function (t) {
       }
     }
   }
-
+  this.undoScaleBodies();
 }
+
 
 GravityLab.prototype.calculateForce = function (body1, body2, force, g) {
 
-  let dx = body2.x - body1.x;
-  let dy = body2.y - body1.y;
+  let dx = (body2.x - body1.x) ;
+  let dy = (body2.y - body1.y) ;
   let d2 = dx * dx + dy * dy;
   let d = Math.sqrt(d2);
 
@@ -131,25 +145,24 @@ GravityLab.prototype.calculateOrbit = function (body, x, y, outOrbitPoints) {
   if (this.bodies.length >= 1) {
     let bx, by, nx, ny;
     let dt = 667;
-    let g = Constants.G / 1000;
+    let g = this.g / 1000;
     let cBody = this.cBody;
     let F = this.F;
     let pBodies = this.bodies;
 
     cBody.mass = body.mass;
-    cBody.x = x / this.scale;
-    cBody.y = y / this.scale;
-    cBody.vx = body.vx;
-    cBody.vy = body.vy;
-    cBody.radius = 8;
-    cBody.color = 'red';
+    cBody.x = x / (this.scale ) * 1000;
+    cBody.y = y / (this.scale ) * 1000;
+    cBody.vx = body.vx * 1000;
+    cBody.vy = body.vy * 1000;
 
     let fx = 0;
     let fy = 0;
 
-    let integration_steps = 20000;
+    let integration_steps = 80000;
     let register_point_threshold = (integration_steps / (outOrbitPoints.length / 2 - 1)) | 0;
 
+    this.scaleBodies();
 
     for (let i = 0, point = 0; i < integration_steps; i++) {
 
@@ -188,7 +201,45 @@ GravityLab.prototype.calculateOrbit = function (body, x, y, outOrbitPoints) {
 
     }
 
+    this.undoScaleBodies();
+
+    for (let i = 0; i < outOrbitPoints.length; i++) {
+      outOrbitPoints[i] /= 1000;
+    }
+    
   }
 }
+
+GravityLab.prototype.deleteBody = function(body) {
+  let index = 0;
+  for (let i = 0; i < this.bodies.length; i++) {
+    if (body === this.bodies[i]) {
+      index = i;
+      break;
+    }
+  }
+  this.bodies.splice(index, 1);
+}
+
+GravityLab.prototype.scaleBodies = function() {
+  for (let i = 0; i < this.bodies.length; i++) {
+    let body = this.bodies[i];
+    body.x *= 1000;
+    body.y *= 1000;
+    body.vx *= 1000;
+    body.vy *= 1000;
+  }
+}
+
+GravityLab.prototype.undoScaleBodies = function() {
+  for (let i = 0; i < this.bodies.length; i++) {
+    let body = this.bodies[i];
+    body.x /= 1000;
+    body.y /= 1000;
+    body.vx /= 1000;
+    body.vy /= 1000;
+  }
+}
+
 
 module.exports = new GravityLab();

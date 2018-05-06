@@ -26,6 +26,10 @@
     "gulp-browserify": "^0.5.1"
   },
   "dependencies": {
-    "number-formatter": "^1.2.0"
+    "number-formatter": "^1.2.0",
+    "vue": "^2.5.16"
+  },
+  "browser": {
+    "vue": "vue/dist/vue.common.js"
   }
 }

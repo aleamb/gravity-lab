@@ -6,18 +6,18 @@
  */
 
 module.exports = {
-    UA: 149597870700, // meters
+    UA: 149597870.7, // meters
     G: -6.67428e-11,
-    DEFAULT_SCALE: 1 / (1e9), // 1px = SCALE meters
-    DEFAULT_VELOCITY_SCALE: 130, // 1px = 1000 m/s
+    DEFAULT_SCALE: (1e6), // 1px = SCALE km
+    DEFAULT_VELOCITY_SCALE: 0.1, // 1px = X km/s
     DEFAULT_TIMESTEP:  1* 24 * 3600, // advance one day
     DEFAULT_DT: 3600, // integration difference
     DEFAULT_GRID_SIZE: 100, // px
-    RADIUS_SCALE_THRESHOLD: 100000,
+    DIAMETER_SCALE_THRESHOLD: 100,
     DEFAULT_TIME_SCALE: 864000, // seconds by real time second
     STAR_DEFAULT_MASS: 1.98e30,
     STAR_DEFAULT_COLOR: '#ffff00',
-    STAR_DEFAULT_RADIUS: 698700,
+    STAR_DEFAULT_DIAMETER: 1.39e6,
     BODY_DEFAULT_MASS: 5.98e24,
-    BODY_DEFAULT_RADIUS: 6400
+    BODY_DEFAULT_DIAMETER: 12756
 };

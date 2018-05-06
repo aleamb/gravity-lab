@@ -21,6 +21,7 @@ let Renderer = function () {
   this.height = 0;
   this.offset_x = 0;
   this.offset_y = 0;
+  this.renderDiameter = false;
 }
 
 Renderer.prototype.init = function (pCanvas, pBackCanvas) {
@@ -31,6 +32,7 @@ Renderer.prototype.init = function (pCanvas, pBackCanvas) {
 }
 
 Renderer.prototype.resizeCanvas = function () {
+  this.clearOrbits();
   this.width = this.canvas.clientWidth;
   this.height = this.canvas.clientHeight;
 
@@ -42,6 +44,7 @@ Renderer.prototype.resizeCanvas = function () {
 }
 
 Renderer.prototype.center = function () {
+  this.clearOrbits();
   this.offset_x = this.width / 2;
   this.offset_y = this.height / 2;
 }
@@ -101,16 +104,16 @@ Renderer.prototype.renderGrid = function (pGridSize) {
 }
 
 Renderer.prototype.move = function (dx, dy) {
+  this.back_canvas.width |= 0;
   this.offset_x += dx;
   this.offset_y += dy;
-  this.back_canvas.width |= 0;
-
-}
+  
+};
 
 Renderer.prototype.renderBodyOn = function (body, x, y) {
   this.context.beginPath();
   this.context.fillStyle = body.color;
-  this.context.arc(x - this.canvas.offsetLeft, y - this.canvas.offsetTop, 8, 0, 2 * Math.PI);
+  this.context.arc(x - this.canvas.offsetLeft, y - this.canvas.offsetTop,  this.renderDiameter ? body.diameter  / 2 * this.scale : 8, 0, 2 * Math.PI);
   this.context.fill();
 }
 
@@ -127,8 +130,14 @@ Renderer.prototype.clientToYViewport = function (clientY) {
 Renderer.prototype.renderBody = function (body) {
   this.context.beginPath();
   this.context.fillStyle = body.color;
-  this.context.arc((body.x * this.scale) + this.offset_x, this.offset_y - (body.y * this.scale), 8, 0, 2 * Math.PI);
+  this.context.arc((body.x * this.scale) + this.offset_x, this.offset_y - (body.y * this.scale), this.renderDiameter ? body.diameter  / 2 * this.scale : 8, 0, 2 * Math.PI);
   this.context.fill();
+  if (body.selected) {
+    this.context.beginPath();
+    this.context.strokeStyle = 'gray';
+    this.context.arc((body.x * this.scale) + this.offset_x, this.offset_y - (body.y * this.scale), this.renderDiameter ? body.diameter  / 2 * this.scale + 5 : 12, 0, 2 * Math.PI);
+    this.context.stroke();
+  }
 }
 
 Renderer.prototype.renderBodyVelocity = function (body, vscale) {
@@ -140,12 +149,13 @@ Renderer.prototype.renderBodyVelocity = function (body, vscale) {
   this.context.moveTo(px, py);
   this.context.lineTo(pvx, pvy);
   this.context.stroke();
-  this.context.fillText('Vx:' + ((body.tvx - body.tx) * vscale / 1000) + ' km/s, Vy: ' + ((body.ty - body.tvy) * vscale / 1000) + ' km/s', pvx, pvy);
+  this.context.fillText('Vx:' + ((body.tvx - body.tx) * vscale).toFixed(3) + ' Km/s, Vy: ' + ((body.ty - body.tvy) * vscale).toFixed(3) + ' Km/s', pvx, pvy);
 }
 
 
 Renderer.prototype.setScale = function (scale) {
-  this.scale = scale;
+  this.scale = 1 / (scale);
+  this.renderDiameter = scale <= Constants.DIAMETER_SCALE_THRESHOLD;
 }
 
 Renderer.prototype.renderDistance = function (cx, cy, bodies) {
@@ -173,7 +183,7 @@ Renderer.prototype.distanceString = function (cx, cy, tx, ty) {
   if (distance > Constants.UA) {
     return ((distance /Constants.UA).toLocaleString()) + ' UA';
   } else {
-    return (distance / 1000).toLocaleString() + ' Km.';
+    return (distance).toLocaleString() + ' Km.';
   }
 }
 Renderer.prototype.calculateDistance = function (cx, cy, tx, ty) {
@@ -182,7 +192,7 @@ Renderer.prototype.calculateDistance = function (cx, cy, tx, ty) {
   return Math.sqrt(dx * dx + dy * dy) / this.scale;
 }
 
-Renderer.prototype.renderOrbitPoints = function (points, scale) {
+Renderer.prototype.renderOrbitPoints = function (points) {
 
   this.context.beginPath();
   let npoints = points.length >> 1;
@@ -190,10 +200,10 @@ Renderer.prototype.renderOrbitPoints = function (points, scale) {
   this.context.strokeStyle = 'black';
 
 
-  this.context.moveTo(points[0] * scale + this.offset_x, this.offset_y - points[1] * scale);
+  this.context.moveTo(points[0] * this.scale + this.offset_x, this.offset_y - points[1] * this.scale);
 
   for (let p = 2; p < npoints; p += 2) {
-    this.context.lineTo(points[p] * scale + this.offset_x, this.offset_y - points[p + 1] * scale);
+    this.context.lineTo(points[p] * this.scale + this.offset_x, this.offset_y - points[p + 1] * this.scale);
     this.context.stroke();
 
   }
@@ -212,4 +222,9 @@ Renderer.prototype.traceOrbitsPosition = function (bodies) {
     this.context.drawImage(this.back_canvas, 0, 0);
 
 }
+
+Renderer.prototype.clearOrbits = function() {
+  this.back_canvas.width |= 0;
+}
+
 module.exports = new Renderer();
