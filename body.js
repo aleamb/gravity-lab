@@ -1,4 +1,10 @@
-
+/**
+ * @file body.js
+ * 
+ * CLas for objects in the universe.
+ * 
+ * @author Alejandro Ambroa <jandroz@gmail.com>
+ */
 
 const Body = function () {
   this.gravity = true;

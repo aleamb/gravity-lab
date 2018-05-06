@@ -26,7 +26,6 @@ const MODES = {
 let requestResizeCheck = null;
 let requestCenterCheck = null;
 let t1 = 0;
-let totalTime = 0;
 let playing = true;
 let mode = 0;
 let mx, my = 0;
@@ -63,8 +62,6 @@ function setDefaults() {
     gravityLabApp.generalParameters.g = Constants.G;
     gravityLabApp.generalParameters.timeScale = Constants.DEFAULT_TIME_SCALE;
     gravityLabApp.generalParameters.gridSize = Constants.DEFAULT_GRID_SIZE;
-
-    time_scale = Constants.DEFAULT_TIME_SCALE;
     renderer.setScale(Constants.DEFAULT_SCALE);
     gravityLab.setScale(Constants.DEFAULT_SCALE);
     gravityLab.setTimeScale (Constants.DEFAULT_TIME_SCALE);
@@ -190,6 +187,7 @@ function onMouseDown(e) {
             mx = e.clientX;
             my = e.clientY;
             mode = MODES.MOVE;
+        default:
             break;
     }
 }
@@ -198,8 +196,6 @@ function frame(t) {
     
     var delta = (t - t1) / 1000;
     t1 = t;
-    totalTime += delta;
-
     renderer.clear();
 
     if (isResizeRequested()) {
@@ -340,7 +336,6 @@ glb.createBody = function () {
 };
 
 glb.resetTime = function () {
-    totalTime = 0;
     gravityLabApp.totalTime.total = 0;
 };
 
@@ -359,27 +354,29 @@ glb.createNewBody = function() {
     body.diameter = currentBody().diameter;
     body.gravity = currentBody().gravity;
     gravityLab.addBody(body);
-}
+};
 
 glb.play_stop = function() {
     playing = !playing;
     document.querySelector('#play-button').innerHTML = playing ? '■' : '▶';
-}
+};
 
 glb.center = function() {
     requestResize();
     requestCenter();
-}
+};
 
 glb.doReset = function() {
     reset();
-    center();
-}
+    glb.center();
+};
+
 glb.centerSelected = function() {
     var body = currentBody();
     let coords = bodyCoordsToClientViewport(body);
     renderer.move(controls.getCanvas().width / 2 - (renderer.getXOffset() + coords[0]) , controls.getCanvas().height / 2 - (renderer.getYOffset() - coords[1]));
-}
+};
+
 glb.deleteSelected = function() {
     let bodies = gravityLab.getBodies();
     for (let i = 0; i < bodies.length; i++) {
@@ -388,7 +385,7 @@ glb.deleteSelected = function() {
             return;
         }
     }
-}
+};
 
 init();
 requestAnimationFrame(frame);

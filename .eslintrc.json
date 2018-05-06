@@ -9,5 +9,5 @@
     "rules": {
         "semi": 2
     },
-    "extends":  ["eslint:recommended",  "airbnb"]
+    "extends":  ["eslint:recommended"]
 }

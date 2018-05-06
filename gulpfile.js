@@ -1,3 +1,10 @@
+/**
+ * @file gulpfle
+ * 
+ * 
+ * @author Alejandro Ambroa <jandroz@gmail.com>
+ */
+
 const gulp = require('gulp');
 const browserSync = require('browser-sync');
 const browserify = require('gulp-browserify');
@@ -11,7 +18,7 @@ gulp.task('browserify', function() {
         insertGlobals : true,
         debug: false
       }))
-      .pipe(gulp.dest('./dist'))
+      .pipe(gulp.dest('./dist'));
 });
 
 // Static server
@@ -27,7 +34,3 @@ gulp.task('browser-sync', () => {
 });
 
 gulp.task('watch', ['browserify', 'browser-sync'], () => {});
-
-
-
-

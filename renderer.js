@@ -22,14 +22,14 @@ let Renderer = function () {
   this.offset_x = 0;
   this.offset_y = 0;
   this.renderDiameter = false;
-}
+};
 
 Renderer.prototype.init = function (pCanvas, pBackCanvas) {
   this.canvas = pCanvas;
   this.back_canvas = pBackCanvas;
   this.context = pCanvas.getContext('2d');
   this.orbits_context = pBackCanvas.getContext('2d');
-}
+};
 
 Renderer.prototype.resizeCanvas = function () {
   this.clearOrbits();
@@ -41,26 +41,26 @@ Renderer.prototype.resizeCanvas = function () {
 
   this.back_canvas.width = this.width;
   this.back_canvas.height = this.height;
-}
+};
 
 Renderer.prototype.center = function () {
   this.clearOrbits();
   this.offset_x = this.width / 2;
   this.offset_y = this.height / 2;
-}
+};
 
 Renderer.prototype.getXOffset = function () {
   return this.offset_x;
-}
+};
 
 Renderer.prototype.getYOffset = function () {
   return this.offset_y;
-}
+};
 
 
 Renderer.prototype.clear = function () {
   this.canvas.width |= 0;
-}
+};
 
 
 Renderer.prototype.renderGrid = function (pGridSize) {
@@ -101,7 +101,7 @@ Renderer.prototype.renderGrid = function (pGridSize) {
     this.context.stroke();
   }
 
-}
+};
 
 Renderer.prototype.move = function (dx, dy) {
   this.back_canvas.width |= 0;
@@ -115,16 +115,16 @@ Renderer.prototype.renderBodyOn = function (body, x, y) {
   this.context.fillStyle = body.color;
   this.context.arc(x - this.canvas.offsetLeft, y - this.canvas.offsetTop,  this.renderDiameter ? body.diameter  / 2 * this.scale : 8, 0, 2 * Math.PI);
   this.context.fill();
-}
+};
 
 Renderer.prototype.clientToXViewport = function (clientX) {
   return clientX - this.canvas.offsetLeft - this.offset_x;
  
-}
+};
 
 Renderer.prototype.clientToYViewport = function (clientY) {
   return this.offset_y - clientY + this.canvas.offsetTop;
-}
+};
 
 
 Renderer.prototype.renderBody = function (body) {
@@ -138,7 +138,7 @@ Renderer.prototype.renderBody = function (body) {
     this.context.arc((body.x * this.scale) + this.offset_x, this.offset_y - (body.y * this.scale), this.renderDiameter ? body.diameter  / 2 * this.scale + 5 : 12, 0, 2 * Math.PI);
     this.context.stroke();
   }
-}
+};
 
 Renderer.prototype.renderBodyVelocity = function (body, vscale) {
   var px = body.tx - this.canvas.offsetLeft;
@@ -150,13 +150,13 @@ Renderer.prototype.renderBodyVelocity = function (body, vscale) {
   this.context.lineTo(pvx, pvy);
   this.context.stroke();
   this.context.fillText('Vx:' + ((body.tvx - body.tx) * vscale).toFixed(3) + ' Km/s, Vy: ' + ((body.ty - body.tvy) * vscale).toFixed(3) + ' Km/s', pvx, pvy);
-}
+};
 
 
 Renderer.prototype.setScale = function (scale) {
   this.scale = 1 / (scale);
   this.renderDiameter = scale <= Constants.DIAMETER_SCALE_THRESHOLD;
-}
+};
 
 Renderer.prototype.renderDistance = function (cx, cy, bodies) {
   for (var i = 0; i < bodies.length; i++) {
@@ -174,7 +174,7 @@ Renderer.prototype.renderDistance = function (cx, cy, bodies) {
     this.context.globalCompositeOperation = 'xor';
     this.context.fillText(this.distanceString(cx - this.canvas.offsetLeft, cy - this.canvas.offsetTop, tx, ty), tx + 15, ty - 15);
   }
-}
+};
 
 Renderer.prototype.distanceString = function (cx, cy, tx, ty) {
 
@@ -185,12 +185,12 @@ Renderer.prototype.distanceString = function (cx, cy, tx, ty) {
   } else {
     return (distance).toLocaleString() + ' Km.';
   }
-}
+};
 Renderer.prototype.calculateDistance = function (cx, cy, tx, ty) {
   var dx = cx - tx;
   var dy = cy - ty;
   return Math.sqrt(dx * dx + dy * dy) / this.scale;
-}
+};
 
 Renderer.prototype.renderOrbitPoints = function (points) {
 
@@ -207,7 +207,7 @@ Renderer.prototype.renderOrbitPoints = function (points) {
     this.context.stroke();
 
   }
-}
+};
 
 Renderer.prototype.traceOrbitsPosition = function (bodies) {
   for (let b = 0; b < bodies.length; b++) {
@@ -221,10 +221,10 @@ Renderer.prototype.traceOrbitsPosition = function (bodies) {
   if (bodies.length)
     this.context.drawImage(this.back_canvas, 0, 0);
 
-}
+};
 
 Renderer.prototype.clearOrbits = function() {
   this.back_canvas.width |= 0;
-}
+};
 
 module.exports = new Renderer();
