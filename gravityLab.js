@@ -201,8 +201,8 @@ GravityLab.prototype.calculateOrbit = function (body, x, y, outOrbitPoints) {
       ax = fx / cBody.mass * dt;
       ay = fy / cBody.mass * dt;
 
-      cBody.vx = cBody.vx + (prev_ax + ax) / 2 * dt
-      cBody.vy = cBody.vy + (prev_ay + ay) / 2 * dt
+      cBody.vx = cBody.vx + (prev_ax + ax) / 2 * dt;
+      cBody.vy = cBody.vy + (prev_ay + ay) / 2 * dt;
 
     }
 

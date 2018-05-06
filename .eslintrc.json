@@ -9,5 +9,10 @@
     "rules": {
         "semi": 2
     },
-    "extends":  ["eslint:recommended"]
+    "extends":  ["eslint:recommended"],
+    "env": {
+        "amd": true,
+        "browser" : true,
+        "commonjs"  : true
+    }
 }

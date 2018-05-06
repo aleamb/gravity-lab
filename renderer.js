@@ -70,7 +70,7 @@ Renderer.prototype.renderGrid = function (pGridSize) {
 
   this.context.strokeStyle = GRID_STYLE;
 
-  for (var i = (this.offset_x % g) - g2; i < this.width; i += g) {
+  for (let i = (this.offset_x % g) - g2; i < this.width; i += g) {
 
     this.context.beginPath();
     this.context.moveTo(i + g2, 0);
@@ -78,7 +78,7 @@ Renderer.prototype.renderGrid = function (pGridSize) {
     this.context.stroke();
   }
 
-  for (var i = this.offset_y % g - g2; i < this.height; i += g) {
+  for (let i = this.offset_y % g - g2; i < this.height; i += g) {
     this.context.beginPath();
     this.context.moveTo(0, i + g2);
     this.context.lineTo(this.width, i + g2);

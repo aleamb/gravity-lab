@@ -179,14 +179,15 @@ function onMouseUp(e) {
 }
 
 function onMouseDown(e) {
+    let px = e.clientX;
+    let py = e.clientY;
     switch (mode) {
         case MODES.POINTER:
-            let px = e.clientX;
-            let py = e.clientY;
             setSelected(renderer.clientToXViewport(px) , renderer.clientToYViewport(py));
             mx = e.clientX;
             my = e.clientY;
             mode = MODES.MOVE;
+            break;
         default:
             break;
     }
@@ -290,7 +291,7 @@ function initVueApp() {
     gravityLabApp = new Vue({
         el: '#gravity-lab',
         watch: {
-            'generalParameters.scale': function(newValue, oldValue) {
+            'generalParameters.scale': function(newValue) {
                 renderer.clearOrbits();
                 gravityLab.setScale(newValue);
                 renderer.setScale(newValue);
@@ -298,10 +299,10 @@ function initVueApp() {
                     glb.centerSelected();
                 }
             },
-            'generalParameters.timeScale': function(newValue, oldValue) {
+            'generalParameters.timeScale': function(newValue) {
                 gravityLab.setTimeScale(newValue);
             },
-            'generalParameters.g': function(newValue, oldValue) {
+            'generalParameters.g': function(newValue) {
                 gravityLab.setG(newValue);
             }
         },
