@@ -388,5 +388,9 @@ glb.deleteSelected = function() {
     }
 };
 
+glb.eraseAll = function() {
+    gravityLab.reset();
+};
+
 init();
 requestAnimationFrame(frame);
