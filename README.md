@@ -4,6 +4,8 @@ Gravity laboratory.
 
 A toy to play with gravity.
 
+The orbits are rendered using Euler's integration, and pre-orbit rendering (while placing body) is calculated by Verlet's integration. 
+
 ![gravity-lab](anim.gif)
 
 ## Features
