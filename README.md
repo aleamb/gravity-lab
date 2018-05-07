@@ -6,7 +6,7 @@ A toy to play with gravity.
 
 ![gravity-lab](anim.gif)
 
-## Fetures
+## Features
 
 * Create objects and set position and velocity using mouse.
 * Modify mass, velocity vector (x and y components), position, diameter and color for each body.
