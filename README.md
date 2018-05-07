@@ -18,6 +18,7 @@ A toy to play with gravity.
 * Trace orbits.
 * Infinite universe.
 * Change body values in real time.
+* Body's gravity enable/disable.
 
 ## Pre-requisites to build and run.
 
