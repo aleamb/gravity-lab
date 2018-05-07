@@ -8,7 +8,6 @@
  */
 
 let Controls = function() {
-
     this.container = null;
     this.canvas = null;
     this.backCanvas = null;

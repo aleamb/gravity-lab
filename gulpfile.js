@@ -13,7 +13,7 @@ const browserify = require('gulp-browserify');
 // Basic usage 
 gulp.task('browserify', function() {
   // Single entry point to browserify 
-  gulp.src('index.js')
+  gulp.src('main.js')
       .pipe(browserify({
         insertGlobals : true,
         debug: false
@@ -34,3 +34,4 @@ gulp.task('browser-sync', () => {
 });
 
 gulp.task('watch', ['browserify', 'browser-sync'], () => {});
+gulp.task('dist', ['browserify'], () => {});

@@ -22,6 +22,13 @@ let GravityLab = function () {
   this.g = 0;
 };
 
+// https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+
+const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => {
+  const hex = x.toString(16);
+  return hex.length === 1 ? '0' + hex : hex;
+}).join('');
+
 GravityLab.prototype.init = function () {
   this.reset();
 };
@@ -61,7 +68,7 @@ GravityLab.prototype.createBody = function () {
   this.newbody.diameter = Constants.BODY_DEFAULT_DIAMETER;
   this.newbody.mass = Constants.BODY_DEFAULT_MASS;
   this.newbody.type = Body.BODY_TYPES.BODY;
-  this.newbody.color = '#' + (Math.random() * 255 | 0).toString(16).toUpperCase() + (Math.random() * 255 | 0).toString(16).toUpperCase() +  (Math.random() * 255 | 0).toString(16).toUpperCase() ;
+  this.newbody.color = rgbToHex(Math.random() * 255 | 0, Math.random() * 255 | 0, Math.random() * 255 | 0);
   return this.newbody;
 };
 
