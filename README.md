@@ -10,11 +10,11 @@ A toy to play with gravity.
 
 * Create objects and set position and velocity using mouse.
 * Modify mass, velocity vector (x and y components), position, diameter and color for each body.
-* Two presets. Star, with Sun's parameters and Body, with Earth parameters.
+* Two presets with Sun and Earth parameters.
 * Modify G.
 * Set scale, velocity scale, grid and time scale.
-* Create bodies providing mass, velocity, position parameters.
-* Pre-draw orbits while placing the body
+* Create bodies providing mass, velocity and position parameters.
+* Pre-draw orbits while placing the body.
 * Trace orbits.
 * Infinite universe.
 * Change body values in real time.
