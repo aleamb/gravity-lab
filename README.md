@@ -2,9 +2,9 @@
 
 Gravity laboratory.
 
-A toy for play with gravity.
+A toy to play with gravity.
 
-
+![gravity-lab](anim.gif)
 
 ## Fetures
 
@@ -17,6 +17,7 @@ A toy for play with gravity.
 * Pre-draw orbits while placing the body
 * Trace orbits.
 * Infinite universe.
+* Change body values in real time.
 
 ## Pre-requisites to build and run.
 

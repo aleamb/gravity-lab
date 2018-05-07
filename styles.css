@@ -80,8 +80,10 @@ label {
 .data-info>div {
     float: left;
     height: 30px;
-    width: 20%;
     padding: 10px 0 10px 0;
+}
+.data-info>div:first-child {
+    width: 16%;
 }
 .parameters-actions {
     float: left;
