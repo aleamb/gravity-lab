@@ -26,7 +26,7 @@ The orbits are rendered using Euler's integration, and pre-orbit rendering (whil
 
 * Install npm
 * Install gulp
-* Browser with HTML5 and ES6 support.
+* Browser with HTML5 support.
 
 ## Build and run
 
