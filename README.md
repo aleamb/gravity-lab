@@ -24,8 +24,7 @@ The orbits are rendered using Euler's integration, and pre-orbit rendering (whil
 
 ## Pre-requisites to build and run.
 
-* Install npm
-* Install gulp
+* Install Nodejs
 * Browser with HTML5 support.
 
 ## Build and run
@@ -39,14 +38,14 @@ npm install
 2. Build
 
 ```
-gulp dist
+npm run dist
 ```
 3. Run
 
 Open index.html in your browser, or run
 
 ```
-gulp watch
+npm run watch
 ```
 
 This last command will open a browser and will load index.html automatically.
