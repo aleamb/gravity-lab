@@ -2,13 +2,15 @@
   "name": "gravity-lab",
   "version": "1.0.0",
   "description": "Gravity laboratoy",
-  "main": "dist/main.js",
+  "main": "dist/grlab.js",
   "scripts": {
+    "dist": "gulp dist",
+    "watch": "gulp watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aleamb/gravity-lab.git"
+    "url": "https://github.com/aleamb/gravity-lab.git"
   },
   "author": "Alejandro Ambroa",
   "license": "MIT",
