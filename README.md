@@ -29,7 +29,7 @@ The orbits are rendered using Euler's integration, and pre-orbit rendering (whil
 
 ## Build and run
 
-1. Install dependencies.
+1. CD to project directory. Install dependencies.
 
 ```
 npm install

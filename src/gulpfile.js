@@ -13,12 +13,12 @@ const browserify = require('gulp-browserify');
 // Basic usage 
 gulp.task('browserify', function() {
   // Single entry point to browserify 
-  gulp.src('grlab.js')
+  gulp.src('main.js')
       .pipe(browserify({
         insertGlobals : true,
         debug: false
       }))
-      .pipe(gulp.dest('./dist'));
+      .pipe(gulp.dest('./dist/grlab.js'));
 });
 
 // Static server
