@@ -18,7 +18,7 @@ gulp.task('browserify', function() {
         insertGlobals : true,
         debug: false
       }))
-      .pipe(gulp.dest('./dist'));
+      .pipe(gulp.dest('./dist/grlab.js'));
 });
 
 // Static server

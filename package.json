@@ -2,13 +2,15 @@
   "name": "gravity-lab",
   "version": "1.0.0",
   "description": "Gravity laboratoy",
-  "main": "dist/main.js",
+  "main": "main.js",
   "scripts": {
+    "dist": "webpack --mode=production",
+    "watch": "webpack-dev-server -d --open",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aleamb/gravity-lab.git"
+    "url": "https://github.com/aleamb/gravity-lab.git"
   },
   "author": "Alejandro Ambroa",
   "license": "MIT",
@@ -16,16 +18,16 @@
     "url": "https://github.com/aleamb/gravity-lab/issues"
   },
   "homepage": "https://github.com/aleamb/gravity-lab#readme",
-  "devDependencies": {
-    "browser-sync": "^2.23.7",
-    "gulp": "^3.9.1",
-    "gulp-browserify": "^0.5.1"
-  },
   "dependencies": {
     "number-formatter": "^1.2.0",
-    "vue": "^2.5.16"
+    "vue": "^2.5.17"
   },
   "browser": {
     "vue": "vue/dist/vue.common.js"
+  },
+  "devDependencies": {
+    "webpack": "^4.25.1",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.10"
   }
 }
