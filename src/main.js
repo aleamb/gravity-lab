@@ -310,7 +310,7 @@ function initVueApp() {
             'timeScale': function(newValue) {
                 gravityLab.setTimeScale(newValue);
             },
-            'g': function(newValue) {
+            'g_value': function(newValue) {
                 gravityLab.setG(newValue);
             }
         },
@@ -328,7 +328,7 @@ function initVueApp() {
                 },
                 velocityScale: 0,
                 scale: 0,
-                g: 0,
+                g_value: 0,
                 timeScale: 0,
                 gridSize: 0,
                 scalePos: 'ua',
