@@ -10,8 +10,8 @@ const gravityLab = require('./gravityLab');
 const controls = require('./controls');
 const renderer = require('./renderer');
 const Body = require('./body');
-const Vue = require("vue");
-let numberFormatter = require('number-formatter');
+const vue = require("vue");
+const numberFormatter = require('number-formatter');
 
 const glb = typeof window !== 'undefined' ? window : global;
 
@@ -31,6 +31,15 @@ let mode = 0;
 let mx, my = 0;
 let orbit_coords = new Array(100 * 2);
 let gravityLabApp = null;
+const context = {
+    velocityScale : 0,
+    scale: 0,
+    G: 0,
+    timeScale: 0,
+    gridSize: 0,
+    currentBody: null,
+    totalTime: { total: 0, y: 0, d: 0, h: 0, m: 0, s: 0 }
+};
 
 function init() {
     initVueApp();
@@ -43,13 +52,10 @@ function init() {
 }
 
 function currentBody(b) {
-    if (!gravityLabApp) {
-        return null;
-    }
     if (b) {
-        gravityLabApp.newbody = b;
+        context.newbody = b;
     }
-    return gravityLabApp.newbody;
+    return context.newbody;
 }
 
 function resetMode() {
@@ -57,15 +63,20 @@ function resetMode() {
 }
 
 function setDefaults() {
-    gravityLabApp.generalParameters.velocityScale = Constants.DEFAULT_VELOCITY_SCALE;
-    gravityLabApp.generalParameters.scale = Constants.DEFAULT_SCALE;
-    gravityLabApp.generalParameters.g = Constants.G;
-    gravityLabApp.generalParameters.timeScale = Constants.DEFAULT_TIME_SCALE;
-    gravityLabApp.generalParameters.gridSize = Constants.DEFAULT_GRID_SIZE;
+
+
+    context.velocityScale = Constants.DEFAULT_VELOCITY_SCALE;
+    context.scale = Constants.DEFAULT_SCALE;
+    context.G = Constants.G;
+    context.timeScale = Constants.DEFAULT_TIME_SCALE;
+    context.gridSize = Constants.DEFAULT_GRID_SIZE;
+
     renderer.setScale(Constants.DEFAULT_SCALE);
     gravityLab.setScale(Constants.DEFAULT_SCALE);
     gravityLab.setTimeScale (Constants.DEFAULT_TIME_SCALE);
     gravityLab.setG(Constants.G);
+
+
 }
 
 function requestResize() {
@@ -117,11 +128,11 @@ function onMouseMove(e) {
     var px = e.clientX;
     var py = e.clientY;
 
-    gravityLabApp.generalParameters.mx = px - controls.getCanvas().offsetLeft - renderer.getXOffset();
-    gravityLabApp.generalParameters.my = renderer.getYOffset() - (py - controls.getCanvas().offsetTop);
+    context.mx = px - controls.getCanvas().offsetLeft - renderer.getXOffset();
+    context.my = renderer.getYOffset() - (py - controls.getCanvas().offsetTop);
 
-    gravityLabApp.generalParameters.xpos = (gravityLabApp.generalParameters.mx * gravityLabApp.generalParameters.scale).toLocaleString(); 
-    gravityLabApp.generalParameters.ypos = (gravityLabApp.generalParameters.my * gravityLabApp.generalParameters.scale ).toLocaleString();
+    context.xpos = (context.mx * context.scale).toLocaleString(); 
+    context.ypos = (context.my * context.scale ).toLocaleString();
 
     switch (mode) {
         case MODES.POINTER:
@@ -143,8 +154,8 @@ function onMouseMove(e) {
         case MODES.BODY_VELOCITY:
             currentBody().tvx = px;
             currentBody().tvy = py;
-            currentBody().vx = (currentBody().tvx - currentBody().tx) * gravityLabApp.generalParameters.velocityScale;
-            currentBody().vy = (currentBody().ty - currentBody().tvy) * gravityLabApp.generalParameters.velocityScale;
+            currentBody().vx = (currentBody().tvx - currentBody().tx) * context.velocityScale;
+            currentBody().vy = (currentBody().ty - currentBody().tvy) * context.velocityScale;
             break;
     }
 }
@@ -209,7 +220,7 @@ function frame(t) {
         cancelCenterRequest();
     }
 
-    renderer.renderGrid(gravityLabApp.generalParameters.gridSize);
+    renderer.renderGrid(context.gridSize);
 
     renderState();
 
@@ -225,7 +236,7 @@ function frame(t) {
         renderer.renderDistance(currentBody().tx, currentBody().ty, gravityLab.getBodies());
     } else if (mode === MODES.BODY_VELOCITY) {
         renderer.renderBodyOn(currentBody(), currentBody().tx, currentBody().ty);
-        renderer.renderBodyVelocity(currentBody(), gravityLabApp.generalParameters.velocityScale);
+        renderer.renderBodyVelocity(currentBody(), context.velocityScale);
         gravityLab.calculateOrbit(currentBody(),
             renderer.clientToXViewport(currentBody().tx),
             renderer.clientToYViewport(currentBody().ty),
@@ -248,8 +259,8 @@ function renderState() {
 }
 
 function countTime(t) {
-    let st = t * gravityLabApp.generalParameters.timeScale;
-    let timeObject = gravityLabApp.totalTime;
+    let st = t * context.timeScale;
+    let timeObject = context.totalTime;
     timeObject.total += st;
     st = timeObject.total;
     timeObject.y = (st / (86400 * 365)) | 0;
@@ -260,7 +271,7 @@ function countTime(t) {
 }
 
 function bodyCoordsToClientViewport(body) {
-    return [(body.x / (gravityLabApp.generalParameters.scale))|0, (body.y / (gravityLabApp.generalParameters.scale))|0];
+    return [(body.x / (context.scale))|0, (body.y / (context.scale))|0];
 }
 
 function setSelected(px, py) {
@@ -285,13 +296,10 @@ function setSelected(px, py) {
   }
 
 function initVueApp() {
-    Vue.filter('formatTime', function(value) {
-        return numberFormatter('000', value);
-    });
-    gravityLabApp = new Vue({
-        el: '#gravity-lab',
+
+    gravityLabApp = vue.createApp({
         watch: {
-            'generalParameters.scale': function(newValue) {
+            'scale': function(newValue) {
                 renderer.clearOrbits();
                 gravityLab.setScale(newValue);
                 renderer.setScale(newValue);
@@ -299,31 +307,59 @@ function initVueApp() {
                     glb.centerSelected();
                 }
             },
-            'generalParameters.timeScale': function(newValue) {
+            'timeScale': function(newValue) {
                 gravityLab.setTimeScale(newValue);
             },
-            'generalParameters.g': function(newValue) {
+            'g': function(newValue) {
                 gravityLab.setG(newValue);
             }
         },
-        data: {
-            newbody: new Body(),
-            generalParameters: {     
-                velocityScale: null,
-                scale: null,
-                g: null,
-                timeScale:null,
-                gridSize: null,
+        data: function() {
+            return {
+                newbody: {
+                    x: 0,
+                    y: 0,
+                    mass: 0,
+                    gravity: 0,
+                    vx: 0,
+                    vy: 0,
+                    diameter: 0,
+                    color: 0
+                },
+                velocityScale: 0,
+                scale: 0,
+                g: 0,
+                timeScale: 0,
+                gridSize: 0,
                 scalePos: 'ua',
                 mx: 0,
                 my: 0,
                 xpos: 0,
-                ypos: 0
+                ypos: 0,
+                totalTime: 0,
+                selected: 0
+            }
+        },
+        computed: {
+            formatTotalTime_Y: function() {
+                return numberFormatter('000', this.totalTime.y);
             },
-            totalTime: { total: 0, y: 0, d: 0, h: 0, m: 0, s: 0 },
-            selected: {}
+            formatTotalTime_D: function() {
+                return numberFormatter('000', this.totalTime.d);
+            },
+            formatTotalTime_H: function() {
+                return numberFormatter('000', this.totalTime.h);
+            },
+            formatTotalTime_M: function() {
+                return numberFormatter('000', this.totalTime.m);
+            },
+            formatTotalTime_S: function() {
+                return numberFormatter('000', this.totalTime.s);
+            }
         }
     });
+
+    gravityLabApp.mount('#gravity-lab')
 }
 
 glb.createStar = function () {
@@ -337,7 +373,7 @@ glb.createBody = function () {
 };
 
 glb.resetTime = function () {
-    gravityLabApp.totalTime.total = 0;
+    context.totalTime.total = 0;
 };
 
 glb.cancel = function () {

@@ -20,14 +20,11 @@
   "homepage": "https://github.com/aleamb/gravity-lab#readme",
   "dependencies": {
     "number-formatter": "^1.2.0",
-    "vue": "^2.5.17"
-  },
-  "browser": {
-    "vue": "vue/dist/vue.common.js"
+    "vue": "^3.4.18"
   },
   "devDependencies": {
-    "webpack": "^4.25.1",
-    "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.8.0"
+    "webpack": "^5.90.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
   }
 }

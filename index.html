@@ -69,23 +69,23 @@
             <legend>General parameters</legend>
             <div class="field">
               <label>G</label>
-              <input id="field-g" type="number" v-model.number="generalParameters.g">
+              
             </div>
             <div class="field">
               <label>Scale (Km. by pixel) </label>
-              <input id="field-scale" type="number" step="1" v-model.number="generalParameters.scale">
+              <input id="field-scale" type="number" step="1" v-model.number="scale">
             </div>
             <div class="field">
               <label>Velocity Scale (Km/s by pixel) </label>
-              <input type="number" step="5" v-model.number="generalParameters.velocityScale">
+              <input type="number" step="5" v-model.number="velocityScale">
             </div>
             <div class="field">
               <label>Time Scale (1s = Univ. seconds) </label>
-              <input id="field-tscale" type="number" step="1000" v-model.number="generalParameters.timeScale">
+              <input id="field-tscale" type="number" step="1000" v-model.number="timeScale">
             </div>
             <div class="field">
               <label>Grid size (px): </label>
-              <input id="field-grid" type="number" step="5" v-model.number="generalParameters.gridSize">
+              <input id="field-grid" type="number" step="5" v-model.number="gridSize">
             </div>
           </fieldset>
         </form>
@@ -107,21 +107,22 @@
     <div class="data-info">
       <div>
         <span>Screen Pos: </span>X:
-        <span id="mx">{{generalParameters.mx}}</span>, Y:
-        <span id="my">{{generalParameters.my}}</span>
+        <span id="mx">{{mx}}</span>, Y:
+        <span id="my">{{my}}</span>
       </div>
       <div>
         <span>Universe Pos: </span>X:
-        <span id="umx">{{generalParameters.xpos}}</span> Km., Y:
-        <span id="umy">{{generalParameters.ypos}}</span> Km.
+        <span id="umx">{{xpos}}</span> Km., Y:
+        <span id="umy">{{ypos}}</span> Km.
       </div>
       <div>
         <span>Time: </span>
-        <span id="info-years">{{totalTime.y | formatTime }}</span>y -
-        <span id="info-days">{{totalTime.d | formatTime }}</span>d -
-        <span id="info-hours">{{totalTime.h | formatTime }}</span>h -
-        <span id="info-minutes">{{totalTime.m | formatTime }}</span>m -
-        <span id="info-seconds">{{totalTime.s | formatTime }}</span>s
+        <span id="info-years">{{ formatTotalTime_Y }}</span>y -
+        <span id="info-days">{{ formatTotalTime_D }}</span>d -
+        <span id="info-hours">{{ formatTotalTime_H }}</span>h -
+        <span id="info-minutes">{{ formatTotalTime_M }}</span>m -
+        <span id="info-seconds">{{ formatTotalTime_S }}</span>s
+
       </div>
     </div>
   </div>

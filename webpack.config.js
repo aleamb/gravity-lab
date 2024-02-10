@@ -1,24 +1,18 @@
 const path = require('path');
 
-var config = {
+module.exports = {
   entry: './src/main.js',
   mode: 'development',
+  devtool: 'source-map',
   output: {
-    path: path.resolve('dist'),
+    path: path.resolve(__dirname, 'dist'),
     filename: 'gravityLab.js'
   },
-  watchOptions: {
-    ignored: /node_modules/
-  },
   devServer: {
-    contentBase: path.join(path.resolve('.'))
+    static: {
+      directory: path.join(__dirname, '.'),
+    },
+    compress: true,
+    port: 9000
   }
-};
-
-module.exports = (env, argv) => {
-
-  if (argv.mode === 'development') {
-    config.devtool = 'source-map';
-  }
-  return config;
 };
