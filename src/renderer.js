@@ -141,15 +141,21 @@ Renderer.prototype.renderBody = function (body) {
 };
 
 Renderer.prototype.renderBodyVelocity = function (body, vscale) {
-  var px = body.tx - this.canvas.offsetLeft;
-  var py = body.ty - this.canvas.offsetTop;
-  var pvx = body.tvx - this.canvas.offsetLeft;
-  var pvy = body.tvy - this.canvas.offsetTop;
 
-  this.context.moveTo(px, py);
-  this.context.lineTo(pvx, pvy);
+  let cx = body.x * this.scale + this.offset_x;
+  let cy = this.offset_y - body.y * this.scale;
+
+
+
+  var px = cx - this.canvas.offsetLeft;
+  var py = cy - this.canvas.offsetTop;
+  var pvx = cx - this.canvas.offsetLeft;
+  var pvy = cy - this.canvas.offsetTop;
+
+  this.context.moveTo(cx, cy);
+  this.context.lineTo(cx + body.vx * vscale, cy + body.vy * vscale);
   this.context.stroke();
-  this.context.fillText('Vx:' + ((body.tvx - body.tx) * vscale).toFixed(3) + ' Km/s, Vy: ' + ((body.ty - body.tvy) * vscale).toFixed(3) + ' Km/s', pvx, pvy);
+  this.context.fillText('Vx:' + body.vx.toFixed(3) + ' Km/s, Vy: ' + body.vy.toFixed(3) + ' Km/s', cx + body.vx * vscale, cy + body.vy * vscale);
 };
 
 
