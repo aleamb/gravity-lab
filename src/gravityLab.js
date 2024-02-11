@@ -43,6 +43,10 @@ GravityLab.prototype.setG = function(value) {
   this.g = Number(value);
 };
 
+GravityLab.prototype.getG = function(value) {
+  return this.g;
+};
+
 GravityLab.prototype.setScale = function (pScale) {
   this.scale = 1 / (pScale);
 };
@@ -54,7 +58,6 @@ GravityLab.prototype.setTimeScale = function (value) {
 GravityLab.prototype.createStar = function () {
 
   this.newbody = new Body();
-  this.newbody.gravity = false;
   this.newbody.diameter = Constants.STAR_DEFAULT_DIAMETER;
   this.newbody.mass = Constants.STAR_DEFAULT_MASS;
   this.newbody.type = Body.BODY_TYPES.STAR;
@@ -72,13 +75,7 @@ GravityLab.prototype.createBody = function () {
   return this.newbody;
 };
 
-GravityLab.prototype.addBody = function (body, xPos, yPos) {
-
-  if (xPos !== undefined)
-    body.x = xPos / this.scale;
-  if (yPos !== undefined)
-    body.y = yPos / this.scale;
-
+GravityLab.prototype.addBody = function (body) {
   this.bodies.push(body);
 };
 

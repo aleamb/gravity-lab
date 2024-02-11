@@ -158,21 +158,24 @@ Renderer.prototype.setScale = function (scale) {
   this.renderDiameter = scale <= Constants.DIAMETER_SCALE_THRESHOLD;
 };
 
-Renderer.prototype.renderDistance = function (cx, cy, bodies) {
+Renderer.prototype.renderDistance = function (body, bodies) {
+
+  let cx = (body.x) * this.scale ;
+  let cy = (body.y) * this.scale;
+
   for (var i = 0; i < bodies.length; i++) {
 
-    var tx = (bodies[i].x) * this.scale + this.offset_x;
-    var ty = this.offset_y - (bodies[i].y) * this.scale;
-
+    let tx = (bodies[i].x) * this.scale;
+    let ty = (bodies[i].y) * this.scale;
 
     this.context.strokeStyle = 'black';
     this.context.beginPath();
-    this.context.moveTo(cx - this.canvas.offsetLeft, cy - this.canvas.offsetTop);
-    this.context.lineTo(tx, ty);
+    this.context.moveTo(cx + this.offset_x, this.offset_y - cy);
+    this.context.lineTo(tx + this.offset_x, this.offset_y - ty);
     this.context.stroke();
     this.context.fillStyle = 'black';
     this.context.globalCompositeOperation = 'xor';
-    this.context.fillText(this.distanceString(cx - this.canvas.offsetLeft, cy - this.canvas.offsetTop, tx, ty), tx + 15, ty - 15);
+    this.context.fillText(this.distanceString(body.x, body.y, bodies[i].x, bodies[i].y), tx + 15 + this.offset_x, this.offset_y  - ty - 15);
   }
 };
 
@@ -189,7 +192,7 @@ Renderer.prototype.distanceString = function (cx, cy, tx, ty) {
 Renderer.prototype.calculateDistance = function (cx, cy, tx, ty) {
   var dx = cx - tx;
   var dy = cy - ty;
-  return Math.sqrt(dx * dx + dy * dy) / this.scale;
+  return Math.sqrt(dx * dx + dy * dy);
 };
 
 Renderer.prototype.renderOrbitPoints = function (points) {
