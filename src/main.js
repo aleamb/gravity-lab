@@ -470,7 +470,7 @@ glb.createNewBody = function() {
     body.diameter = bodyFormData.diameter;
     gravityLab.addBody(body);
     currentBody(body);
-    setSelectedBody(object);
+    setSelectedBody(body);
     updateFormData(body)
 
 };
