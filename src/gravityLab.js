@@ -150,7 +150,7 @@ GravityLab.prototype.calculateForce = function (body1, body2, force, g) {
  * @param {*} outOrbitPoints 
  */
 
-GravityLab.prototype.calculateOrbit = function (body, x, y, outOrbitPoints) {
+GravityLab.prototype.calculateOrbit = function (body, outOrbitPoints) {
 
   if (this.bodies.length >= 1) {
     let dt = Constants.PRE_ORBIT_INTEGRATION_DT;
@@ -160,8 +160,8 @@ GravityLab.prototype.calculateOrbit = function (body, x, y, outOrbitPoints) {
     let pBodies = this.bodies;
 
     cBody.mass = body.mass;
-    cBody.x = x / (this.scale ) * 1000;
-    cBody.y = y / (this.scale ) * 1000;
+    cBody.x = body.x * 1000;
+    cBody.y = body.y * 1000;
     cBody.vx = body.vx * 1000;
     cBody.vy = body.vy * 1000;
 
@@ -214,6 +214,8 @@ GravityLab.prototype.calculateOrbit = function (body, x, y, outOrbitPoints) {
 
     for (let i = 0; i < outOrbitPoints.length; i++) {
       outOrbitPoints[i] /= 1000;
+
+
     }
     
   }

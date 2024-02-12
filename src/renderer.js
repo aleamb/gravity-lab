@@ -145,17 +145,10 @@ Renderer.prototype.renderBodyVelocity = function (body, vscale) {
   let cx = body.x * this.scale + this.offset_x;
   let cy = this.offset_y - body.y * this.scale;
 
-
-
-  var px = cx - this.canvas.offsetLeft;
-  var py = cy - this.canvas.offsetTop;
-  var pvx = cx - this.canvas.offsetLeft;
-  var pvy = cy - this.canvas.offsetTop;
-
   this.context.moveTo(cx, cy);
-  this.context.lineTo(cx + body.vx * vscale, cy + body.vy * vscale);
+  this.context.lineTo(cx + body.vx / vscale, cy - body.vy / vscale);
   this.context.stroke();
-  this.context.fillText('Vx:' + body.vx.toFixed(3) + ' Km/s, Vy: ' + body.vy.toFixed(3) + ' Km/s', cx + body.vx * vscale, cy + body.vy * vscale);
+  this.context.fillText('Vx:' + body.vx.toFixed(3) + ' Km/s, Vy: ' + body.vy.toFixed(3) + ' Km/s', cx + body.vx / vscale, cy - body.vy / vscale);
 };
 
 
@@ -207,7 +200,6 @@ Renderer.prototype.renderOrbitPoints = function (points) {
   let npoints = points.length >> 1;
 
   this.context.strokeStyle = 'black';
-
 
   this.context.moveTo(points[0] * this.scale + this.offset_x, this.offset_y - points[1] * this.scale);
 

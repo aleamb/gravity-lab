@@ -218,23 +218,22 @@ function onMouseUp(e) {
             break;
         case MODES.STAR:
             object = currentBody()
-            gravityLab.addBody(object, renderer.clientToXViewport(px), renderer.clientToYViewport(py));
-            bodyFormData.positionEditable = true;
-            bodyFormData.velocityVectorEditable = true;
+            gravityLab.addBody(object);
             mode = bodyFormData.velocityVectorToggle ? MODES.BODY_VELOCITY : MODES.POINTER;
-            object.selected = true;
+            setSelectedBody(object);
             break;
         case MODES.BODY_POINTING:
-            currentBody().ux = px;
-            currentBody().uy = py;
-            currentBody().tvx = currentBody().tx;
-            currentBody().tvy = currentBody().ty;
             mode = bodyFormData.velocityVectorToggle ? MODES.BODY_VELOCITY : MODES.POINTER;
-            bodyFormData.positionEditable = true;
-            bodyFormData.velocityVectorEditable = true;
+            if (mode == MODES.POINTER)  {
+                object = currentBody()
+                gravityLab.addBody(object);
+                setSelectedBody(object);
+            }
             break;
         case MODES.BODY_VELOCITY:
-            gravityLab.addBody(currentBody());
+            object = currentBody()
+            gravityLab.addBody(object);
+            setSelectedBody(object);
             mode = MODES.POINTER;
     }
 }
@@ -244,10 +243,13 @@ function onMouseDown(e) {
     let py = e.clientY;
     switch (mode) {
         case MODES.POINTER:
-            setSelected(renderer.clientToXViewport(px) , renderer.clientToYViewport(py));
             mx = e.clientX;
             my = e.clientY;
+            bodySelected = setSelected(renderer.clientToXViewport(px) , renderer.clientToYViewport(py));
             mode = MODES.MOVE;
+            if (!bodySelected) {
+                updateFormData(null);
+            }
             break;
         default:
             break;
@@ -287,11 +289,8 @@ function frame(t) {
         } else if (mode === MODES.BODY_VELOCITY) {
             renderer.renderBody(currentBody());
             renderer.renderBodyVelocity(currentBody(), context.velocityScale);
-            //gravityLab.calculateOrbit(currentBody(),
-                //renderer.clientToXViewport(currentBody().tx),
-                //renderer.clientToYViewport(currentBody().ty),
-                //orbit_coords);
-            //renderer.renderOrbitPoints(orbit_coords);
+            gravityLab.calculateOrbit(currentBody(), orbit_coords);
+            renderer.renderOrbitPoints(orbit_coords);
         }
         updateFormData(currentBody());
     }
@@ -302,9 +301,6 @@ function renderState() {
     let bodies = gravityLab.getBodies();
     for (var b = 0; b < bodies.length; b++) {
         let body = bodies[b];
-        if (body.gravity) {
-            //renderVectors(body, context);
-        }
         renderer.renderBody(body);
         renderer.traceOrbitsPosition(gravityLab.getBodies());
     }
@@ -339,13 +335,26 @@ function setSelected(px, py) {
         body.selected = true;
         selected = body;
         currentBody(body);
+      } else {
+        body.selected = false;
       }
     }
     if (!selected) {
-        currentBody(new Body());
+        currentBody(null);
     }
     return selected;
-  }
+}
+
+function setSelectedBody(object) {
+    let bodies = gravityLab.getBodies();
+    for (var i = 0; i < bodies.length; i++) {
+        if (bodies[i] === object) {
+            bodies[i].selected = true;
+        } else {
+            bodies[i].selected = false;
+        }
+    }
+}
 
 function initVueApp() {
 
@@ -447,16 +456,22 @@ glb.resetTime = function () {
 };
 
 glb.createNewBody = function() {
-    var body = gravityLab.createBody();
-    body.x = currentBody().x;
-    body.y = currentBody().y;
-    body.vx = currentBody().vx;
-    body.vy = currentBody().vy;
-    body.mass = currentBody().mass;
-    body.color = currentBody().color;
-    body.diameter = currentBody().diameter;
-    body.gravity = currentBody().gravity;
+    if (bodyFormData.mass < 1) {
+        alert("Mass must be greater or equal to 1kg");
+        return;
+    }
+    let body = gravityLab.createBody();
+    body.x = bodyFormData.ux;
+    body.y = bodyFormData.uy;
+    body.vx = bodyFormData.vx;
+    body.vy = bodyFormData.vy;
+    body.mass = bodyFormData.mass;
+    body.color = bodyFormData.color;
+    body.diameter = bodyFormData.diameter;
     gravityLab.addBody(body);
+    currentBody(body);
+    updateFormData(body)
+
 };
 
 glb.play_stop = function() {
@@ -485,9 +500,11 @@ glb.deleteSelected = function() {
     for (let i = 0; i < bodies.length; i++) {
         if (bodies[i].selected) {
             gravityLab.deleteBody(bodies[i]);
-            return;
+            break;
         }
     }
+    currentBody(null);
+    updateFormData(null);
 };
 
 glb.eraseAll = function() {

@@ -24,11 +24,11 @@
             <legend>Body parameters</legend>
             <div class="field xpos">
               <label for="field-uxpos">X universe position (km.).</label>
-              <input id="field-uxpos" type="number" step="1" autocomplete="off" v-model="bodyFormData.ux" :disabled="!bodyFormData.positionEditable">
+              <input id="field-uxpos" type="number" step="1" autocomplete="off" v-model.number="bodyFormData.ux" :disabled="!bodyFormData.positionEditable">
             </div>
             <div class="field ypos">
               <label for="field-uypos">Y universe position (km).</label>
-              <input id="field-uypos" type="number" step="1" autocomplete="off" v-model="bodyFormData.uy" :disabled="!bodyFormData.positionEditable">
+              <input id="field-uypos" type="number" step="1" autocomplete="off" v-model.number="bodyFormData.uy" :disabled="!bodyFormData.positionEditable">
             </div>
             <div class="field field-mass">
               <label>Mass (Kg)</label>
