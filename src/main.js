@@ -292,7 +292,9 @@ function frame(t) {
             gravityLab.calculateOrbit(currentBody(), orbit_coords);
             renderer.renderOrbitPoints(orbit_coords);
         }
-        updateFormData(currentBody());
+        if (playing) {
+            updateFormData(currentBody());
+        }
     }
     requestAnimationFrame(frame);
 }
