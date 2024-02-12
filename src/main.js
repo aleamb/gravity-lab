@@ -11,7 +11,6 @@ const controls = require('./controls');
 const renderer = require('./renderer');
 const Body = require('./body');
 const vue = require("vue");
-const numberFormatter = require('number-formatter');
 
 const glb = typeof window !== 'undefined' ? window : global;
 
